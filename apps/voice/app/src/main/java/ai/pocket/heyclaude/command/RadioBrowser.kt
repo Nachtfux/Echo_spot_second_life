@@ -18,12 +18,15 @@ object RadioBrowser {
 
     private fun norm(s: String) = s.lowercase().replace(Regex("[^a-z0-9äöüß]"), "")
 
-    /** Best station for the spoken name, or null. [strict]: name must match exactly (used for "spiel X"). */
-    fun find(spoken: String, strict: Boolean): Station? {
-        val q = GermanNumbers.digitsAndLetters(spoken)
-        val candidates = linkedSetOf(q, q.replace(" ", ""))
+    /**
+     * Best station for [spokenName] (numbers already as digits, see [CommandParser.stationQuery]),
+     * or null. [strict]: name must match exactly (used for "spiel X" / "play X"). Stations in
+     * [preferredCountry] are searched first, then worldwide.
+     */
+    fun find(spokenName: String, strict: Boolean, preferredCountry: String?): Station? {
+        val candidates = linkedSetOf(spokenName, spokenName.replace(" ", ""))
         for (query in candidates) {
-            for (country in listOf("DE", null)) {
+            for (country in listOf(preferredCountry, null).distinct()) {
                 val list = search(query, country)
                 val want = norm(query)
                 val exact = list.filter { norm(it.name) == want }.maxByOrNull { it.votes }

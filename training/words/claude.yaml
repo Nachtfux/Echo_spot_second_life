@@ -1,0 +1,70 @@
+# Word set "claude": the wake word and stop word used by the Claude profile of Spot Voice.
+# Train with:  ./train.sh claude      (format: see words/example-custom.yaml)
+#
+# The German Piper voice reads texts that contain a word from german_words; the English voice
+# reads everything else. "klohd" is how a German speaker writes the sound of "Claude".
+name: claude
+
+models:
+  hey_claude:          # wake word -> hey_claude.onnx
+    target_phrase:
+      - hey claude
+      - hey clode
+      - hey klohd
+      - hey, klohd
+      - hey klohd!
+    custom_negative_phrases:
+      - hey klaus
+      - hey claudia
+      - hey kloss
+      - hallo klohd
+      - danke klohd
+      - hey clown
+      - hey cloud
+      - hey cleo
+      - hey chloe
+      - hey clara
+      - hey jarvis
+      - okay google
+      - hey google
+      - alexa
+      - hey siri
+      - hey
+      - claude
+  danke_claude:        # stop word -> danke_claude.onnx
+    target_phrase:
+      - danke klohd
+      - danke, klohd
+      - danke klohd!
+      - klohd stopp
+      - klohd, stopp
+      - danke claude
+      - claude stop
+    custom_negative_phrases:
+      - danke
+      - danke schoen
+      - danke dir
+      - danke klaus
+      - stopp
+      - klaus stopp
+      - hallo klohd
+      - hey klohd
+      - bitte klohd
+      - thank you
+      - thanks
+      - hey claude
+      - alexa
+      - hey google
+      - hey jarvis
+
+# Texts containing any of these words are spoken by the German voice (de_DE-mls-medium).
+german_words: [danke, schoen, dankeschoen, dir, klohd, stopp, hallo, tschuess,
+               klaus, claudia, nein, bitte, kloss, tschett, dschi]
+
+# ARPAbet for target-phrase words that are not in CMUdict (used to generate sound-alike
+# negatives). These four are also built into the patched openwakeword; listed for clarity.
+pronunciations:
+  klohd: K L OW1 D
+  clode: K L OW1 D
+  danke: D AA1 NG K AH0
+  stopp: S T AA1 P

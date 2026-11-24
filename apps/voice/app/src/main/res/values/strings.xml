@@ -1,48 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hey Claude</string>
+    <string name="app_name">Spot Voice</string>
 
     <!-- Notification -->
-    <string name="notif_channel">Wake-Word</string>
-    <string name="notif_starting">Startet …</string>
-    <string name="notif_listening">Hört zu – sag das Wake-Word</string>
-    <string name="notif_paused">Pausiert – Claude ist dran</string>
-    <string name="notif_error">Fehler – siehe App</string>
-    <string name="notif_action_stop">Stopp</string>
+    <string name="notif_channel">Wake word</string>
+    <string name="notif_starting">Starting …</string>
+    <string name="notif_listening">Listening – say the wake word</string>
+    <string name="notif_paused">Paused – %1$s is on</string>
+    <string name="notif_error">Error – see app</string>
+    <string name="notif_action_stop">Stop</string>
 
     <!-- Status -->
-    <string name="state_stopped">Gestoppt</string>
-    <string name="state_starting">Startet …</string>
-    <string name="state_listening">Hört zu</string>
-    <string name="state_paused">Pausiert (Claude aktiv)</string>
-    <string name="state_error">Fehler</string>
-    <string name="status_model">Modell: %1$s</string>
-    <string name="status_mic">Mikrofon-Recht: %1$s</string>
-    <string name="status_a11y">Bedienungshilfe: %1$s</string>
-    <string name="status_overlay">Overlay-Recht: %1$s</string>
-    <string name="status_claude">Claude-App: %1$s</string>
-    <string name="status_silenced">Mikrofon liefert nur Stille – App einmal öffnen und Dienst neu starten</string>
-    <string name="model_unknown">wird beim Start geladen</string>
-    <string name="yes">ja</string>
-    <string name="no">nein</string>
-    <string name="claude_missing">Claude-App nicht installiert (%1$s)</string>
+    <string name="state_stopped">Stopped</string>
+    <string name="state_starting">Starting …</string>
+    <string name="state_listening">Listening</string>
+    <string name="state_paused">Paused (%1$s active)</string>
+    <string name="state_error">Error</string>
+    <string name="status_model">Model: %1$s</string>
+    <string name="status_mic">Mic permission: %1$s</string>
+    <string name="status_a11y">Accessibility service: %1$s</string>
+    <string name="status_overlay">Overlay permission: %1$s</string>
+    <string name="status_assistant">%1$s app: %2$s</string>
+    <string name="status_commands">Voice commands (%1$s): %2$s</string>
+    <string name="status_silenced">Mic delivers only silence – open the app once and restart listening</string>
+    <string name="model_unknown">loaded on start</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="assistant_missing">%1$s app not installed (%2$s)</string>
+
+    <!-- Errors (service) -->
+    <string name="err_start_failed">Start failed: %1$s</string>
+    <string name="err_model">Model could not be loaded: %1$s</string>
+    <string name="err_mic_permission">Microphone permission missing</string>
+    <string name="err_mic_open">Microphone could not be opened</string>
+    <string name="err_mic_read">Microphone read error</string>
+    <string name="err_detect">Detection failed: %1$s</string>
 
     <!-- Buttons -->
-    <string name="btn_permission">Mikrofon erlauben</string>
-    <string name="btn_start">Zuhören starten</string>
-    <string name="btn_stop">Zuhören stoppen</string>
-    <string name="btn_a11y">Bedienungshilfe aktivieren</string>
-    <string name="btn_overlay">Overlay-Recht erteilen</string>
-    <string name="btn_launch_test">Test: Claude jetzt starten</string>
+    <string name="btn_permission">Allow microphone</string>
+    <string name="btn_start">Start listening</string>
+    <string name="btn_stop">Stop listening</string>
+    <string name="btn_a11y">Enable accessibility service</string>
+    <string name="btn_overlay">Grant overlay permission</string>
+    <string name="btn_launch_test">Test: open %1$s now</string>
+
+    <!-- Assistant + command language -->
+    <string name="assistant_label">Assistant</string>
+    <string name="lang_label">Command language</string>
+    <string name="lang_de" translatable="false">Deutsch</string>
+    <string name="lang_en" translatable="false">English</string>
 
     <!-- Threshold + mic test -->
-    <string name="threshold_label">Schwelle: %1$.2f</string>
-    <string name="test_title">Mikrofon-Test</string>
-    <string name="btn_test_start">Test starten</string>
-    <string name="btn_test_stop">Test stoppen</string>
-    <string name="test_level">Pegel</string>
-    <string name="test_score">Wake-Score</string>
-    <string name="test_info">Score %1$.2f · Spitze %2$.2f</string>
-    <string name="test_service_running">Dienst läuft (Spitze %1$.2f) – zum Testen stoppen</string>
-    <string name="test_mic_failed">Mikrofon konnte nicht geöffnet werden</string>
+    <string name="threshold_label">Threshold: %1$.2f</string>
+    <string name="test_title">Mic test</string>
+    <string name="btn_test_start">Start test</string>
+    <string name="btn_test_stop">Stop test</string>
+    <string name="test_level">Level</string>
+    <string name="test_score">Wake score</string>
+    <string name="test_info">Score %1$.2f · peak %2$.2f</string>
+    <string name="test_service_running">Service running (peak %1$.2f) – stop it to test</string>
+    <string name="test_mic_failed">Microphone could not be opened</string>
 </resources>

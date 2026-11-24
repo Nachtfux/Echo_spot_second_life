@@ -1,7 +1,10 @@
 """Download a spread-out subset of openWakeWord's ACAV100M negative features (~4 GB of 16.5 GB).
 
+    python3 fetch_features.py OUT.npy [GB=4] [PHASE=0]
+
 The .npy is fetched with HTTP Range requests in CHUNKS evenly spaced over the file and written
-as a new, valid .npy with the reduced row count. Stdlib only (runs with any python3).
+as a new, valid .npy with the reduced row count. PHASE 0.5 takes the chunks halfway between
+those of PHASE 0, so two runs give two disjoint subsets. Stdlib only (runs with any python3).
 """
 import ast
 import os

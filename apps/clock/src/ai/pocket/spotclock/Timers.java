@@ -11,10 +11,11 @@ import android.util.Log;
 import java.util.Calendar;
 
 /**
- * One countdown timer and one alarm ("Wecker"), set by voice through Hey Claude:
- *   am broadcast -a ai.pocket.spotclock.TIMER --el seconds 600      (0 = cancel)
- *   am broadcast -a ai.pocket.spotclock.ALARM --ei hour 6 --ei minute 30   (hour -1 = cancel)
- *   am broadcast -a ai.pocket.spotclock.STOP_RINGING
+ * One countdown timer and one alarm, set by voice through Spot Voice (ai.pocket.heyclaude).
+ * The broadcasts must name the package (-p), Android 8+ drops implicit ones for manifest receivers:
+ *   am broadcast -a ai.pocket.spotclock.TIMER -p ai.pocket.spotclock --el seconds 600                (0 = cancel)
+ *   am broadcast -a ai.pocket.spotclock.ALARM -p ai.pocket.spotclock --ei hour 6 --ei minute 30      (hour -1 = cancel)
+ *   am broadcast -a ai.pocket.spotclock.STOP_RINGING -p ai.pocket.spotclock
  * Fires through AlarmManager, so it also works while the clock is not on screen.
  */
 public class Timers extends BroadcastReceiver {

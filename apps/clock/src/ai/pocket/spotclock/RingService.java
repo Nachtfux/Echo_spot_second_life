@@ -44,11 +44,12 @@ public class RingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String kind = intent != null && intent.getStringExtra("kind") != null ? intent.getStringExtra("kind") : "timer";
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Timer & Wecker", NotificationManager.IMPORTANCE_LOW));
+        // Re-creating an existing channel only updates its name (e.g. after a language change).
+        nm.createNotificationChannel(new NotificationChannel(CHANNEL, getString(R.string.ring_channel), NotificationManager.IMPORTANCE_LOW));
         Notification n = new Notification.Builder(this, CHANNEL)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("timer".equals(kind) ? "Timer abgelaufen" : "Wecker")
-                .setContentText("Tippen auf die Uhr oder „Hey Claude, stopp“")
+                .setContentTitle(getString("timer".equals(kind) ? R.string.ring_timer_title : R.string.ring_alarm_title))
+                .setContentText(getString(R.string.ring_hint, ClockView.assistantName(this)))
                 .build();
         startForeground(7, n);
         ringing = kind;

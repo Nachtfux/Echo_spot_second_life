@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class AppsActivity extends Activity {
     private static final List<String> FAVOURITES = Arrays.asList(
-            "com.anthropic.claude", "com.spotify.music", "ai.pocket.heyclaude",
+            "com.anthropic.claude", "com.openai.chatgpt", "com.spotify.music", "ai.pocket.heyclaude",
             "com.aurora.store", "com.android.settings");
 
     private float unit;   // px per 1/480 of the screen width
@@ -76,7 +76,8 @@ public class AppsActivity extends Activity {
         root.addView(grid, new FrameLayout.LayoutParams(s(348), ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER_HORIZONTAL));
 
         TextView back = new TextView(this);
-        back.setText("Zur Uhr");
+        back.setText(R.string.back_to_clock);
+        back.setSingleLine(true);
         back.setTextColor(ClockView.IVORY);
         back.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         back.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, s(15));
@@ -93,7 +94,11 @@ public class AppsActivity extends Activity {
                 finish();
             }
         });
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(s(140), s(48), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        // 140 units wide like before; longer translations ("Back to clock") widen the pill
+        // instead of wrapping (still well inside the round screen at this height).
+        back.setMinWidth(s(140));
+        back.setPadding(s(22), 0, s(22), 0);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, s(48), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         lp.bottomMargin = s(34);
         root.addView(back, lp);
 

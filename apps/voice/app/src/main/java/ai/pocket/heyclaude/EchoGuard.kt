@@ -11,16 +11,18 @@ import android.os.SystemClock
 import android.util.Log
 
 /**
- * Runs while a Claude voice session is in front (WakeWordService state PAUSED).
+ * Runs while an assistant voice session (Claude or ChatGPT) is in front (WakeWordService
+ * state PAUSED). Labels and stop phrases come from the active [Assistant] profile.
  *
  * 1. Echo guard (half duplex). LineageOS on the Spot has no acoustic echo cancellation and
- *    the Claude app records with VOICE_RECOGNITION, so in hands-free mode Claude hears its
- *    own voice and interrupts itself; the system mic mute is ignored by the Spot's HAL. So
- *    we watch the speaker output (Visualizer on the output mix) and press Claude's
- *    "Mikrofon stummschalten" while it talks, "Mikrofon-Stummschaltung aufheben" right after.
- *    You cannot talk over Claude; a mute set by the user is never undone.
- * 2. Ending the conversation hands-free: "Beenden" is pressed after [IDLE_END_MS] without
- *    anyone talking, or when the transcript shows "Danke Claude" / "Claude Stopp" / ….
+ *    the assistant apps record with VOICE_RECOGNITION, so in hands-free mode the assistant
+ *    hears its own voice and interrupts itself; the system mic mute is ignored by the Spot's
+ *    HAL. So we watch the speaker output (Visualizer on the output mix) and press the app's
+ *    mic-mute button ("Mikrofon stummschalten") while it talks and unmute right after.
+ *    You cannot talk over the assistant; a mute set by the user is never undone.
+ * 2. Ending the conversation hands-free: the end button ("Beenden") is pressed after
+ *    [IDLE_END_MS] without anyone talking, or when the transcript shows a stop phrase
+ *    ("Danke Claude", "Claude Stopp", "thank you ChatGPT", …, see [Assistant.stopPhrase]).
  * 3. When the voice-mode screen is gone (ended), the Spot goes home, which makes
  *    WakeWordService listen for the wake word again.
  */
@@ -33,20 +35,14 @@ object EchoGuard {
     /** Keep the mic closed this long after the output went quiet (pauses between sentences). */
     private const val TAIL_MS = 700L
 
-    /** Output RMS (millibel) above which we treat Claude as speaking. Silence is -9600. */
+    /** Output RMS (millibel) above which we treat the assistant as speaking. Silence is -9600. */
     private const val RMS_THRESHOLD_MB = -5500
 
-    /** Silence after Claude's last answer (nobody talking) -> "Beenden". */
+    /** Silence after the assistant's last answer (nobody talking) -> end button. */
     private const val IDLE_END_MS = 10_000L
 
-    /** The user spoke last and Claude has not answered yet (thinking) -> allow longer. */
-    private const val WAIT_FOR_CLAUDE_MS = 30_000L
-
-    /** Spoken goodbyes, as Claude transcribes them (also catches "Klaud", "Cloud" …). */
-    private val STOP_PHRASE = Regex(
-        "(?i)\\b(danke(schön)?|stopp?|tschüss?|ciao|ende|beenden|auf wiedersehen|bye)\\b[\\s,.!]{0,3}(claude|claud|klaud|clod|cloud|klod)\\b" +
-            "|\\b(claude|claud|klaud|clod|cloud|klod)\\b[\\s,.!]{0,3}(stopp?|danke|tschüss?|ende|beenden|aus)\\b",
-    )
+    /** The user spoke last and the assistant has not answered yet (thinking) -> allow longer. */
+    private const val WAIT_FOR_ASSISTANT_MS = 30_000L
 
     private val handler = Handler(Looper.getMainLooper())
     private var audio: AudioManager? = null
@@ -55,9 +51,10 @@ object EchoGuard {
     private var mic: MicMeter? = null
 
     private var running = false
+    private var assistant = Assistant.DEFAULT   // profile of the running session
     private var ticks = 0
-    private var lastLoud = 0L          // Claude's voice on the speaker
-    private var lastTranscript = 0L    // new text appeared in Claude's window
+    private var lastLoud = 0L          // the assistant's voice on the speaker
+    private var lastTranscript = 0L    // new text appeared in the assistant's window
     private var mutedByUs = false
     private var lastMuteTry = 0L
     private var voiceSeen = false
@@ -79,6 +76,7 @@ object EchoGuard {
         val app = ctx.applicationContext
         handler.post {
             if (running || !Prefs.echoGuard(app)) return@post
+            assistant = Prefs.assistant(app)
             audio = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             visualizer = openVisualizer()
             mic = MicMeter().also { it.start() }
@@ -92,7 +90,7 @@ object EchoGuard {
             endRequested = false
             baseline = emptySet()
             handler.post(poll)
-            Log.i(Constants.TAG, "EchoGuard on (visualizer=${visualizer != null})")
+            Log.i(Constants.TAG, "EchoGuard on (${assistant.id}, visualizer=${visualizer != null})")
         }
     }
 
@@ -101,7 +99,7 @@ object EchoGuard {
             if (!running) return@post
             running = false
             handler.removeCallbacks(poll)
-            if (mutedByUs) VoiceModeA11yService.setClaudeMic(false)
+            if (mutedByUs) VoiceModeA11yService.setAssistantMic(false)
             mutedByUs = false
             mic?.stop()
             mic = null
@@ -123,10 +121,10 @@ object EchoGuard {
         endConversation("wake word")
     }
 
-    /** Debug/test hook (broadcast MIC_MUTE): press Claude's mic button directly. */
+    /** Debug/test hook (broadcast MIC_MUTE): press the assistant's mic button directly. */
     fun forceMute(on: Boolean) {
         handler.post {
-            val r = VoiceModeA11yService.setClaudeMic(on)
+            val r = VoiceModeA11yService.setAssistantMic(on)
             Log.i(Constants.TAG, "EchoGuard: forced mic ${if (on) "mute" else "unmute"} -> $r")
         }
     }
@@ -162,32 +160,32 @@ object EchoGuard {
     private fun tick() {
         val now = SystemClock.uptimeMillis()
         if (outputLoud(now)) lastLoud = now
-        val claudeSpeaking = lastLoud != 0L && now - lastLoud < TAIL_MS
+        val assistantSpeaking = lastLoud != 0L && now - lastLoud < TAIL_MS
 
-        if (claudeSpeaking && !mutedByUs && now - lastMuteTry > RETRY_MS) {
+        if (assistantSpeaking && !mutedByUs && now - lastMuteTry > RETRY_MS) {
             lastMuteTry = now
-            if (VoiceModeA11yService.setClaudeMic(true) == MicResult.DONE) {
+            if (VoiceModeA11yService.setAssistantMic(true) == MicResult.DONE) {
                 mutedByUs = true
-                Log.i(Constants.TAG, "EchoGuard: Claude speaks -> mic muted")
+                Log.i(Constants.TAG, "EchoGuard: ${assistant.displayName} speaks -> mic muted")
             }
-            // ALREADY: the user muted by hand, leave it. Others: retry while Claude speaks.
-        } else if (!claudeSpeaking && mutedByUs) {
-            when (VoiceModeA11yService.setClaudeMic(false)) {
+            // ALREADY: the user muted by hand, leave it. Others: retry while the assistant speaks.
+        } else if (!assistantSpeaking && mutedByUs) {
+            when (VoiceModeA11yService.setAssistantMic(false)) {
                 MicResult.DONE, MicResult.ALREADY -> {
                     mutedByUs = false
-                    Log.i(Constants.TAG, "EchoGuard: Claude done -> mic open")
+                    Log.i(Constants.TAG, "EchoGuard: ${assistant.displayName} done -> mic open")
                 }
                 else -> {}
             }
         }
 
-        if (++ticks % UI_CHECK_EVERY == 0) checkVoiceUi(now, claudeSpeaking)
+        if (++ticks % UI_CHECK_EVERY == 0) checkVoiceUi(now, assistantSpeaking)
     }
 
-    private fun checkVoiceUi(now: Long, claudeSpeaking: Boolean) {
+    private fun checkVoiceUi(now: Long, assistantSpeaking: Boolean) {
         when (VoiceModeA11yService.voiceUiVisible()) {
             true -> {
-                val texts = VoiceModeA11yService.claudeTexts().orEmpty()
+                val texts = VoiceModeA11yService.assistantTexts().orEmpty()
                 if (!voiceSeen) {
                     // Session (re)started: earlier transcript lines must not count.
                     voiceSeen = true
@@ -201,12 +199,12 @@ object EchoGuard {
                 if (fresh.isNotEmpty()) {
                     lastTranscript = now
                     baseline = baseline + fresh
-                    fresh.firstOrNull { STOP_PHRASE.containsMatchIn(it) }?.let {
+                    fresh.firstOrNull { assistant.isStopPhrase(it) }?.let {
                         endConversation("stop phrase")
                         return
                     }
                 }
-                if (!claudeSpeaking && !endRequested) checkIdle(now)
+                if (!assistantSpeaking && !endRequested) checkIdle(now)
             }
             false -> if (voiceSeen && ++voiceGone >= VOICE_GONE_CHECKS) {
                 voiceSeen = false
@@ -215,25 +213,25 @@ object EchoGuard {
                 VoiceModeA11yService.forgetEndAction()
                 VoiceModeA11yService.goHome()
             }
-            null -> {}   // Claude not in front
+            null -> {}   // assistant not in front
         }
     }
 
-    /** "Silence" = neither Claude nor the user made a sound, nor did new transcript text appear. */
+    /** "Silence" = neither the assistant nor the user made a sound, nor did new transcript text appear. */
     private fun checkIdle(now: Long) {
         val m = mic
         val userVoice = if (m != null && !m.silenced) m.lastVoiceAt else 0L
         val lastUser = maxOf(userVoice, lastTranscript)
-        val waitingForClaude = lastUser > lastLoud && lastUser > voiceSince
+        val waitingForAssistant = lastUser > lastLoud && lastUser > voiceSince
         val since = maxOf(voiceSince, lastLoud, lastUser)
-        val limit = if (waitingForClaude) WAIT_FOR_CLAUDE_MS else IDLE_END_MS
+        val limit = if (waitingForAssistant) WAIT_FOR_ASSISTANT_MS else IDLE_END_MS
         if (now - since > limit) endConversation("${limit / 1000} s silence")
     }
 
     private fun endConversation(reason: String) {
         endRequested = true
-        Log.i(Constants.TAG, "EchoGuard: end conversation ($reason) -> Beenden")
-        if (mutedByUs) VoiceModeA11yService.setClaudeMic(false)
+        Log.i(Constants.TAG, "EchoGuard: end conversation ($reason) -> end button")
+        if (mutedByUs) VoiceModeA11yService.setAssistantMic(false)
         mutedByUs = false
         if (!VoiceModeA11yService.endVoiceMode()) VoiceModeA11yService.goHome()
     }

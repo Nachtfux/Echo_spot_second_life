@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="500" viewBox="0 0 1400 500" role="img" aria-labelledby="voice-session-title voice-session-desc" xml:lang="de">
+  <title id="voice-session-title">Ablauf eines Sprachgesprächs</title>
+  <desc id="voice-session-desc">Zeitleiste: Du sagst Hey Claude. Der Spot wacht auf, die App öffnet sich und der Sprachmodus startet in etwa 3 Sekunden. Claude spricht, während EchoGuard dein Mikrofon stumm hält, dann sprichst du und so weiter. Das Gespräch endet mit Danke Claude, 10 Sekunden Stille, dem erneuten Wakeword oder der Power-Taste. Danach zeigt der Spot wieder die Uhr und hört zu. Mit ChatGPT genauso.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <rect x="2" y="2" width="1396" height="496" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="74" class="serif" font-size="34" fill="#141413">Ein Gespräch</text>
+  <text x="56" y="108" class="sans" font-size="18" fill="#5E5D59">Beispiel mit Claude – mit ChatGPT läuft es genauso.</text>
+  <path d="M112 250 L1280 250" fill="none" stroke="#E8E6DC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M56 148 h112 a14 14 0 0 1 14 14 v12 a14 14 0 0 1 -14 14 h-46 l-10 12 l-10 -12 h-46 a14 14 0 0 1 -14 -14 v-12 a14 14 0 0 1 14 -14 z" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="112" y="180" class="serif" font-size="20" fill="#141413" text-anchor="middle" font-style="italic">„Hey Claude“</text>
+  <circle cx="112" cy="250" r="24" fill="#D97757"/>
+  <path transform="translate(100 238) scale(1)" d="M12 3.2a3 3 0 0 1 3 3v5.6a3 3 0 0 1-6 0V6.2a3 3 0 0 1 3-3zM6 11.4a6 6 0 0 0 12 0M12 17.4v3.4M8.8 20.8h6.4" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="112" y="316" class="sans" font-size="17" fill="#5E5D59" text-anchor="middle"><tspan x="112">du sagst</tspan><tspan x="112" dy="24">das Wakeword</tspan></text>
+  <rect x="196" y="230" width="184" height="40" rx="20" fill="#E8E6DC"/>
+  <text x="288" y="256" class="sans" font-size="17" fill="#5E5D59" font-weight="700" text-anchor="middle">~3 s</text>
+  <text x="196" y="314" class="sans" font-size="18" fill="#141413" font-weight="700">Spot wacht auf</text>
+  <text x="196" y="340" class="sans" font-size="17" fill="#5E5D59"><tspan x="196">Display an, App öffnet,</tspan><tspan x="196" dy="24">Sprachmodus startet</tspan></text>
+  <rect x="396" y="230" width="200" height="40" rx="20" fill="#D97757"/>
+  <path transform="translate(452.19 240) scale(0.83)" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="480.19" y="256" class="sans" font-size="17" fill="#FFFFFF" font-weight="700">Claude</text>
+  <text x="396" y="314" class="sans" font-size="18" fill="#141413" font-weight="700">Claude spricht</text>
+  <text x="396" y="340" class="sans" font-size="17" fill="#5E5D59"><tspan x="396">dein Mikro ist stumm</tspan><tspan x="396" dy="24">(EchoGuard)</tspan></text>
+  <rect x="612" y="230" width="160" height="40" rx="20" fill="#141413"/>
+  <path transform="translate(662.34 240) scale(0.83)" d="M12 3.2a3 3 0 0 1 3 3v5.6a3 3 0 0 1-6 0V6.2a3 3 0 0 1 3-3zM6 11.4a6 6 0 0 0 12 0M12 17.4v3.4M8.8 20.8h6.4" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="690.34" y="256" class="sans" font-size="17" fill="#FFFFFF" font-weight="700">du</text>
+  <text x="612" y="314" class="sans" font-size="18" fill="#141413" font-weight="700">Du sprichst</text>
+  <text x="612" y="340" class="sans" font-size="17" fill="#5E5D59">Mikro wieder offen</text>
+  <rect x="788" y="230" width="80" height="40" rx="20" fill="#D97757"/>
+  <path transform="translate(818 240) scale(0.83)" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="880" y="230" width="60" height="40" rx="20" fill="#141413"/>
+  <path transform="translate(900 240) scale(0.83)" d="M12 3.2a3 3 0 0 1 3 3v5.6a3 3 0 0 1-6 0V6.2a3 3 0 0 1 3-3zM6 11.4a6 6 0 0 0 12 0M12 17.4v3.4M8.8 20.8h6.4" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="956" cy="250" r="3" fill="#B0AEA5"/>
+  <circle cx="968" cy="250" r="3" fill="#B0AEA5"/>
+  <circle cx="980" cy="250" r="3" fill="#B0AEA5"/>
+  <text x="788" y="314" class="sans" font-size="18" fill="#141413" font-weight="700">… und so weiter</text>
+  <text x="788" y="340" class="sans" font-size="17" fill="#5E5D59">abwechselnd</text>
+  <path d="M396 217 L396 212 Q396 208 400 208 L986 208 Q990 208 990 212 L990 217" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="621" y="194" width="144" height="28" rx="14" fill="#FAF9F5"/>
+  <text x="693" y="214" class="sans" font-size="16" fill="#5E5D59" font-weight="600" text-anchor="middle">Sprachmodus</text>
+  <circle cx="1036" cy="250" r="24" fill="#FFFFFF" stroke="#141413" stroke-width="2.5"/>
+  <rect x="1028" y="242" width="16" height="16" rx="3" fill="#141413"/>
+  <text x="1006" y="314" class="sans" font-size="18" fill="#141413" font-weight="700">Ende durch</text>
+  <text x="1006" y="340" class="sans" font-size="17" fill="#5E5D59"><tspan x="1006">„Danke Claude“</tspan><tspan x="1006" dy="24">oder 10 s Stille</tspan><tspan x="1006" dy="24">oder nochmal Wakeword</tspan><tspan x="1006" dy="24">oder Power-Taste</tspan></text>
+  <path d="M1066 250 L1235 250" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1242 250 L1232 256.2 L1232 243.8 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="1288" cy="250" r="39" fill="#0B0B0A" stroke="#3A3936" stroke-width="2"/>
+  <circle cx="1288" cy="250" r="34" fill="#141413"/>
+  <line x1="1288" y1="223.48" x2="1288" y2="218.72" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1301.26" y1="227.03" x2="1303.64" y2="222.91" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1310.97" y1="236.74" x2="1315.09" y2="234.36" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1314.52" y1="250" x2="1319.28" y2="250" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1310.97" y1="263.26" x2="1315.09" y2="265.64" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1301.26" y1="272.97" x2="1303.64" y2="277.09" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1288" y1="276.52" x2="1288" y2="281.28" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1274.74" y1="272.97" x2="1272.36" y2="277.09" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1265.03" y1="263.26" x2="1260.91" y2="265.64" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1261.48" y1="250" x2="1256.72" y2="250" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1265.03" y1="236.74" x2="1260.91" y2="234.36" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1274.74" y1="227.03" x2="1272.36" y2="222.91" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1288" y1="250" x2="1275.47" y2="241.22" stroke="#FAF9F5" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="1288" y1="250" x2="1306.94" y2="236.74" stroke="#FAF9F5" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="1288" cy="250" r="9" fill="none" stroke="#D97757" stroke-width="1.5" stroke-opacity="0.6"/>
+  <circle cx="1288" cy="250" r="4.5" fill="#D97757"/>
+  <text x="1288" y="314" class="sans" font-size="18" fill="#141413" font-weight="700" text-anchor="middle">Zurück zur Uhr</text>
+  <text x="1288" y="340" class="sans" font-size="17" fill="#5E5D59" text-anchor="middle">hört wieder zu</text>
+  <path d="M56 432 L1344 432" fill="none" stroke="#DEDBD0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="68" cy="462" r="7" fill="#D97757"/>
+  <circle cx="68" cy="462" r="12" fill="none" stroke="#D97757" stroke-width="1.5" stroke-opacity="0.5"/>
+  <text x="92" y="468" class="sans" font-size="17" fill="#5E5D59">Die Mitte der Uhr zeigt den Zustand: orange mit Ring = hört zu, pulsierend = im Gespräch, grau = aus.</text>
+</svg>

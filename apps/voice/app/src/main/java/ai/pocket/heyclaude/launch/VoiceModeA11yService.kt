@@ -20,11 +20,13 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 
 /**
- * Accessibility service with two jobs:
- *  1. After a wake-word launch, find and click the voice-mode button in the Claude app
- *     (there is no official deep link for voice mode).
- *  2. Notice when the Claude app leaves the foreground and send [Constants.ACTION_RESUME]
+ * Accessibility service, only acting on the active assistant app ([Prefs.assistant]):
+ *  1. After a wake-word launch, find and click the voice-mode button in the Claude or ChatGPT
+ *     app (there is no official deep link for voice mode).
+ *  2. Notice when the assistant app leaves the foreground and send [Constants.ACTION_RESUME]
  *     so WakeWordService starts listening again.
+ *  3. Press the mic-mute / end buttons for [ai.pocket.heyclaude.EchoGuard].
+ * All labels come from the [ai.pocket.heyclaude.Assistant] profile.
  *
  * Debug: `adb shell am broadcast -a ai.pocket.heyclaude.DUMP_NODES -p ai.pocket.heyclaude`
  * dumps the current window tree to logcat (tag HeyClaude).
@@ -49,7 +51,7 @@ class VoiceModeA11yService : AccessibilityService() {
 
         val isConnected: Boolean get() = instance != null
 
-        /** Called by [ClaudeLauncher] right after startActivity (any thread). */
+        /** Called by [AssistantLauncher] right after startActivity (any thread). */
         fun onLaunchRequested() {
             val svc = instance ?: return
             svc.handler.post { svc.onLaunch() }
@@ -57,74 +59,67 @@ class VoiceModeA11yService : AccessibilityService() {
 
         enum class MicResult { DONE, ALREADY, NOT_VISIBLE, NO_SERVICE, FAILED }
 
-        // Claude voice-mode mic toggle. German app: "Mikrofon stummschalten" (mic open) /
-        // "Mikrofon-Stummschaltung aufheben" (mic muted). Must not match "Claudes Stimme stummschalten".
-        private val MIC_MUTE_LABEL = Regex("(?i)^(mikrofon stummschalten|mute microphone|mute mic|mute)$")
-        private val MIC_UNMUTE_LABEL = Regex("(?i)stummschaltung aufheben|^unmute")
+        /** EchoGuard: mute/unmute the mic inside the assistant's voice mode. Main thread. */
+        fun setAssistantMic(muted: Boolean): MicResult =
+            instance?.assistantMic(muted) ?: MicResult.NO_SERVICE
 
-        /** EchoGuard: mute/unmute the mic inside Claude's voice mode. Main thread. */
-        fun setClaudeMic(muted: Boolean): MicResult =
-            instance?.claudeMic(muted) ?: MicResult.NO_SERVICE
-
-        /** true = voice-mode screen showing, false = Claude in front without it, null = Claude not in front. */
+        /** true = voice-mode screen showing, false = assistant in front without it, null = assistant not in front. */
         fun voiceUiVisible(): Boolean? = instance?.voiceUi()
 
         fun goHome() {
             instance?.performGlobalAction(GLOBAL_ACTION_HOME)
         }
 
-        /** Voice mode ended normally ("Beenden" pressed): forget the cached notification action. */
+        /** Voice mode ended normally (end button pressed): forget the cached notification action. */
         fun forgetEndAction() {
-            instance?.let { it.handler.post { it.claudeEndAction = null } }
+            instance?.let { it.handler.post { it.endAction = null } }
         }
 
-        private val END_ACTION_LABEL = Regex("(?i)^(beenden|auflegen|end|end call|hang up)$")
-
-        private val END_LABEL = Regex("(?i)^(beenden|end|end call|end voice mode)$")
-
-        /** Visible texts of Claude's window (transcript lines etc.), or null if Claude is not in front. */
-        fun claudeTexts(): List<String>? {
+        /** Visible texts of the assistant's window (transcript lines etc.), or null if it is not in front. */
+        fun assistantTexts(): List<String>? {
             val svc = instance ?: return null
-            val root = svc.claudeRoot() ?: return null
+            val root = svc.assistantRoot() ?: return null
             return svc.collect(root).mapNotNull { n ->
                 n.text?.toString()?.trim()?.takeIf { it.isNotEmpty() && it.length <= 300 }
             }
         }
 
-        /** Presses "Beenden" in Claude's voice mode. Main thread. */
+        /** Presses the end button ("Beenden") in the assistant's voice mode. Main thread. */
         fun endVoiceMode(): Boolean {
             val svc = instance ?: return false
-            val root = svc.claudeRoot() ?: return false
+            val root = svc.assistantRoot() ?: return false
+            val assistant = Prefs.assistant(svc)
             val end = svc.collect(root).firstOrNull { n ->
-                n.contentDescription?.toString()?.let { END_LABEL.matches(it) } == true
+                n.contentDescription?.toString()?.let { assistant.isEndButtonLabel(it) } == true
             } ?: return false
             return svc.click(end)
         }
     }
 
-    private fun claudeRoot(): AccessibilityNodeInfo? {
+    private fun assistantRoot(): AccessibilityNodeInfo? {
         val root = try {
             rootInActiveWindow
         } catch (_: Exception) {
             null
         } ?: return null
-        return if (root.packageName?.toString() == Prefs.claudePackage(this)) root else null
+        return if (root.packageName?.toString() == Prefs.assistantPackage(this)) root else null
     }
 
-    /** (mute button, unmute button) of Claude's voice mode, whichever is showing. */
+    /** (mute button, unmute button) of the assistant's voice mode, whichever is showing. */
     private fun micButtons(root: AccessibilityNodeInfo): Pair<AccessibilityNodeInfo?, AccessibilityNodeInfo?> {
+        val assistant = Prefs.assistant(this)
         var mute: AccessibilityNodeInfo? = null
         var unmute: AccessibilityNodeInfo? = null
         for (n in collect(root)) {
             val d = n.contentDescription?.toString() ?: continue
-            if (mute == null && MIC_MUTE_LABEL.matches(d)) mute = n
-            else if (unmute == null && MIC_UNMUTE_LABEL.containsMatchIn(d)) unmute = n
+            if (mute == null && assistant.isMicMuteLabel(d)) mute = n
+            else if (unmute == null && assistant.isMicUnmuteLabel(d)) unmute = n
         }
         return mute to unmute
     }
 
-    private fun claudeMic(muted: Boolean): MicResult {
-        val root = claudeRoot() ?: return MicResult.NOT_VISIBLE
+    private fun assistantMic(muted: Boolean): MicResult {
+        val root = assistantRoot() ?: return MicResult.NOT_VISIBLE
         val (mute, unmute) = micButtons(root)
         val target = if (muted) mute else unmute
         val other = if (muted) unmute else mute
@@ -133,7 +128,7 @@ class VoiceModeA11yService : AccessibilityService() {
     }
 
     private fun voiceUi(): Boolean? {
-        val root = claudeRoot() ?: return null
+        val root = assistantRoot() ?: return null
         val (mute, unmute) = micButtons(root)
         return mute != null || unmute != null
     }
@@ -160,9 +155,9 @@ class VoiceModeA11yService : AccessibilityService() {
                 ACTION_DUMP_NODES -> dumpAllWindows()
                 Intent.ACTION_SCREEN_OFF -> {
                     // Screen went dark while a session was running: the conversation is over.
-                    if (LaunchState.sessionActive && LaunchState.claudeSeen) {
+                    if (LaunchState.sessionActive && LaunchState.assistantSeen) {
                         sendResume("screen off")
-                        // Claude is still the top app: put the clock (home) in front for the next wake-up.
+                        // The assistant is still the top app: put the clock (home) in front for the next wake-up.
                         bringHomeToFront()
                     }
                 }
@@ -227,18 +222,18 @@ class VoiceModeA11yService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         val pkg = event.packageName?.toString() ?: return
-        val claude = Prefs.claudePackage(this)
+        val target = Prefs.assistantPackage(this)
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                if (!isIgnoredPackage(pkg)) onForeground(pkg, claude)
-                if (pkg == claude && LaunchState.tapPending()) startTapSequence()
+                if (!isIgnoredPackage(pkg)) onForeground(pkg, target)
+                if (pkg == target && LaunchState.tapPending()) startTapSequence()
             }
             AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED -> {
-                if (pkg == claude) rememberEndAction(event)
+                if (pkg == target) rememberEndAction(event)
             }
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
-                if (pkg == claude && LaunchState.tapPending() && tapLoopRunning) {
+                if (pkg == target && LaunchState.tapPending() && tapLoopRunning) {
                     // Content changed: try sooner than the next scheduled tick (throttled).
                     if (SystemClock.elapsedRealtime() - lastAttemptAt >= RETRY_MS / 2) {
                         handler.removeCallbacks(tapRunnable)
@@ -249,16 +244,16 @@ class VoiceModeA11yService : AccessibilityService() {
         }
     }
 
-    private fun onForeground(pkg: String, claude: String) {
+    private fun onForeground(pkg: String, target: String) {
         if (pkg == foregroundPkg) return
         foregroundPkg = pkg
         if (!LaunchState.sessionActive) return
-        if (pkg == claude) {
-            if (!LaunchState.claudeSeen) Log.i(TAG, "A11y: Claude is in foreground")
-            LaunchState.claudeSeen = true
+        if (pkg == target) {
+            if (!LaunchState.assistantSeen) Log.i(TAG, "A11y: $target is in foreground")
+            LaunchState.assistantSeen = true
             handler.removeCallbacks(leaveCheck)
             leaveCheckPosted = false
-        } else if (LaunchState.claudeSeen && !leaveCheckPosted) {
+        } else if (LaunchState.assistantSeen && !leaveCheckPosted) {
             Log.i(TAG, "A11y: foreground changed to $pkg, checking in ${LEAVE_DEBOUNCE_MS}ms")
             leaveCheckPosted = true
             handler.postDelayed(leaveCheck, LEAVE_DEBOUNCE_MS)
@@ -266,42 +261,43 @@ class VoiceModeA11yService : AccessibilityService() {
     }
 
     private fun checkLeft() {
-        if (!LaunchState.sessionActive || !LaunchState.claudeSeen) return
-        val claude = Prefs.claudePackage(this)
+        if (!LaunchState.sessionActive || !LaunchState.assistantSeen) return
+        val target = Prefs.assistantPackage(this)
         val activePkg = try {
             rootInActiveWindow?.packageName?.toString()
         } catch (_: Exception) {
             null
         }
         val current = activePkg?.takeUnless { isIgnoredPackage(it) } ?: foregroundPkg
-        if (current == claude) {
-            Log.i(TAG, "A11y: Claude is back in foreground, no resume")
-            foregroundPkg = claude
+        if (current == target) {
+            Log.i(TAG, "A11y: $target is back in foreground, no resume")
+            foregroundPkg = target
             return
         }
-        sendResume("Claude left foreground (now $current)")
+        sendResume("$target left foreground (now $current)")
     }
 
     /**
-     * Claude's voice mode keeps running in the background (like a phone call) when you leave
-     * the app. Its ongoing notification has an "Beenden" action; we keep that PendingIntent
-     * and fire it when the conversation should be over.
+     * The assistant's voice mode keeps running in the background (like a phone call) when you
+     * leave the app. Its ongoing notification has an end action ("Beenden"); we keep that
+     * PendingIntent and fire it when the conversation should be over.
      */
-    private var claudeEndAction: android.app.PendingIntent? = null
+    private var endAction: android.app.PendingIntent? = null
 
     private fun rememberEndAction(event: AccessibilityEvent) {
         val n = event.parcelableData as? android.app.Notification ?: return
-        val a = n.actions?.firstOrNull { END_ACTION_LABEL.containsMatchIn(it.title?.toString().orEmpty()) } ?: return
-        claudeEndAction = a.actionIntent
-        Log.i(TAG, "A11y: remembered Claude notification action '${a.title}'")
+        val assistant = Prefs.assistant(this)
+        val a = n.actions?.firstOrNull { assistant.isEndNotificationAction(it.title?.toString().orEmpty()) } ?: return
+        endAction = a.actionIntent
+        Log.i(TAG, "A11y: remembered ${assistant.displayName} notification action '${a.title}'")
     }
 
-    private fun endClaudeVoice(reason: String) {
-        val a = claudeEndAction ?: return
-        claudeEndAction = null
+    private fun endVoiceSession(reason: String) {
+        val a = endAction ?: return
+        endAction = null
         try {
             a.send()
-            Log.i(TAG, "A11y: ended Claude voice mode via its notification ($reason)")
+            Log.i(TAG, "A11y: ended voice mode via the assistant's notification ($reason)")
         } catch (e: Exception) {
             Log.w(TAG, "A11y: notification action failed", e)
         }
@@ -320,8 +316,8 @@ class VoiceModeA11yService : AccessibilityService() {
     }
 
     private fun sendResume(reason: String) {
-        // Leaving Claude ends the conversation, so it does not keep talking in the background.
-        endClaudeVoice(reason)
+        // Leaving the assistant ends the conversation, so it does not keep talking in the background.
+        endVoiceSession(reason)
         Log.i(TAG, "A11y: sending RESUME ($reason)")
         LaunchState.endSession()
         stopTapLoop()
@@ -362,13 +358,13 @@ class VoiceModeA11yService : AccessibilityService() {
         leaveCheckPosted = false
         foregroundPkg = null
         refreshImePackages()
-        // Claude may already be in front, in which case no window-state event follows.
+        // The assistant may already be in front, in which case no window-state event follows.
         val active = try {
             rootInActiveWindow?.packageName?.toString()
         } catch (_: Exception) {
             null
         }
-        if (active != null && !isIgnoredPackage(active)) onForeground(active, Prefs.claudePackage(this))
+        if (active != null && !isIgnoredPackage(active)) onForeground(active, Prefs.assistantPackage(this))
         startTapSequence()
     }
 
@@ -399,23 +395,50 @@ class VoiceModeA11yService : AccessibilityService() {
             return
         }
         lastAttemptAt = SystemClock.elapsedRealtime()
-        val claude = Prefs.claudePackage(this)
+        val assistant = Prefs.assistant(this)
+        val target = Prefs.assistantPackage(this, assistant)
         val root = try {
             rootInActiveWindow
         } catch (_: Exception) {
             null
         }
-        if (root == null || root.packageName?.toString() != claude) {
-            // Claude not (yet) in front: keep waiting without burning a try.
-            Log.d(TAG, "A11y: waiting for Claude window (active=${root?.packageName})")
+        if (root == null || root.packageName?.toString() != target) {
+            // Assistant not (yet) in front: keep waiting without burning a try.
+            Log.d(TAG, "A11y: waiting for $target window (active=${root?.packageName})")
             scheduleNext()
             return
         }
 
         tries++
-        val voicePattern = Prefs.voiceButtonPattern(this)
+        // The assistant may come back with an earlier voice session still open (seen with Claude
+        // after its process survived in the background), possibly with the mic muted. Then there is
+        // no voice button to tap: take over the open session and make sure the user can talk.
+        val (muteBtn, unmuteBtn) = micButtons(root)
+        if (muteBtn != null || unmuteBtn != null) {
+            Log.i(TAG, "A11y: voice mode already open")
+            if (muteBtn == null && unmuteBtn != null) {
+                Log.i(TAG, "A11y: mic was muted -> unmute ${if (click(unmuteBtn)) "ok" else "failed"}")
+            }
+            LaunchState.clearTap()
+            stopTapLoop()
+            return
+        }
+        val voicePattern = Prefs.voiceButtonPattern(this, assistant)
         val nodes = collect(root)
-        val voice = bestMatch(nodes, voicePattern, exclude = Prefs.DICTATION_PATTERN)
+        // Fresh context per wake-word session (default): otherwise every session continues the
+        // last chat and the assistant keeps referring to earlier turns. If no new-chat button is
+        // visible (e.g. the app already shows an empty chat), go straight to the voice button.
+        if (Prefs.newChatEachSession(this) && !newChatClicked) {
+            val newChat = bestMatch(nodes, Prefs.newChatPattern(this, assistant))
+            if (newChat != null) {
+                newChatClicked = true
+                Log.i(TAG, "A11y: new chat for this session ${describe(newChat)} -> ${if (click(newChat)) "ok" else "failed"}")
+                maxTries = tries + EXTRA_TRIES_AFTER_NEW_CHAT
+                scheduleNext()
+                return
+            }
+        }
+        val voice = bestMatch(nodes, voicePattern, exclude = assistant.voiceButtonExclude)
         if (voice != null) {
             Log.i(TAG, "A11y: try $tries/$maxTries: voice button match ${describe(voice)}")
             if (click(voice)) {
@@ -428,7 +451,7 @@ class VoiceModeA11yService : AccessibilityService() {
         } else {
             Log.i(TAG, "A11y: try $tries/$maxTries: no node matches $voicePattern")
             if (!newChatClicked) {
-                val newChat = bestMatch(nodes, Prefs.newChatPattern(this))
+                val newChat = bestMatch(nodes, Prefs.newChatPattern(this, assistant))
                 if (newChat != null) {
                     Log.i(TAG, "A11y: clicking new-chat ${describe(newChat)}")
                     if (click(newChat)) {
@@ -441,7 +464,7 @@ class VoiceModeA11yService : AccessibilityService() {
         }
 
         if (tries >= maxTries) {
-            Log.w(TAG, "A11y: giving up auto-tap after $tries tries; set voice_button_pattern to a label above")
+            Log.w(TAG, "A11y: giving up auto-tap after $tries tries; set ${assistant.id}_voice_button_pattern to a label above")
             LaunchState.clearTap()
             stopTapLoop()
             return

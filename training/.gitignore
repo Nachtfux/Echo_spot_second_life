@@ -1,0 +1,9 @@
+# Created by setup.sh / train.sh: large and re-created on demand.
+/.venv/
+/openwakeword/
+/piper-sample-generator/
+/data/
+/out/
+__pycache__/
+*.log
+*.part

@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="architecture-title architecture-desc" xml:lang="en">
+  <title id="architecture-title">How Spot Voice works</title>
+  <desc id="architecture-desc">Architecture. Microphone, then SilenceGate, which skips the neural networks in a quiet room, then openWakeWord on the Spot: melspectrogram.onnx, embedding_model.onnx and two classifiers sharing the embeddings, wake (Hey Claude, Hey ChatGPT) and stop (Danke Claude, Danke ChatGPT). After the wake word, Vosk offline speech recognition (German or English) and a command parser run local commands: Spotify, internet radio from radio-browser.info, timer and alarm on Spot Clock. Without a command, the accessibility service opens Claude or ChatGPT and taps its voice-mode button; only this voice mode runs in the cloud. EchoGuard watches the speaker output, mutes the assistant's microphone while it talks and ends the conversation after 10 s of silence, the stop word or the wake word. Spot Clock receives the STATE broadcast (listening or active) and shows now playing, timers and weather.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <rect x="2" y="2" width="1396" height="896" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="78" class="serif" font-size="34" fill="#141413">How Spot Voice works</text>
+  <text x="56" y="112" class="sans" font-size="18" fill="#5E5D59">Everything runs offline on the Spot – only the assistant's voice mode uses the cloud.</text>
+  <rect x="1016" y="63" width="26" height="20" rx="6" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="1052" y="79" class="sans" font-size="16" fill="#5E5D59">on the Spot, offline</text>
+  <rect x="1250" y="63" width="26" height="20" rx="6" fill="#FBEFE9" stroke="#D97757" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="1286" y="79" class="sans" font-size="16" fill="#5E5D59">cloud</text>
+  <circle cx="104" cy="262" r="38" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(88 246) scale(1.33)" d="M12 3.2a3 3 0 0 1 3 3v5.6a3 3 0 0 1-6 0V6.2a3 3 0 0 1 3-3zM6 11.4a6 6 0 0 0 12 0M12 17.4v3.4M8.8 20.8h6.4" fill="none" stroke="#141413" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="104" y="326" class="sans" font-size="16" fill="#5E5D59" font-weight="500" text-anchor="middle">Microphone</text>
+  <path d="M144 262 L167.7 262" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M174 262 L165 267.58 L165 256.42 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="178" y="207" width="222" height="110" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="200" y="244" class="sans" font-size="19" fill="#141413" font-weight="700">SilenceGate</text>
+  <text x="200" y="271" class="sans" font-size="16" fill="#5E5D59"><tspan x="200">skips the neural nets</tspan><tspan x="200" dy="22">in a quiet room</tspan></text>
+  <path d="M402 262 L425.7 262" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M432 262 L423 267.58 L423 256.42 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="436" y="150" width="908" height="214" rx="22" fill="#F0EEE6"/>
+  <text x="460" y="186" class="serif" font-size="22" fill="#141413">openWakeWord</text>
+  <text x="1320" y="184" class="sans" font-size="16" fill="#5E5D59" text-anchor="end" font-style="italic">two classifiers share one embedding</text>
+  <rect x="460" y="207" width="222" height="110" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="571" y="248" class="sans" font-size="18" fill="#141413" font-weight="700" text-anchor="middle">Mel spectrogram</text>
+  <text x="571" y="280" class="mono" font-size="16" fill="#5E5D59" text-anchor="middle">melspectrogram.onnx</text>
+  <rect x="708" y="207" width="240" height="110" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="828" y="248" class="sans" font-size="18" fill="#141413" font-weight="700" text-anchor="middle">Embedding</text>
+  <text x="828" y="280" class="mono" font-size="16" fill="#5E5D59" text-anchor="middle">embedding_model.onnx</text>
+  <path d="M682 262 L700.4 262" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M706 262 L698 266.96 L698 257.04 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M950 262 L970 262" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M970 262 L970 233.2 Q970 224 979.2 224 L988.4 224" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M994 224 L986 228.96 L986 219.04 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M970 262 L970 290.8 Q970 300 979.2 300 L988.4 300" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M994 300 L986 304.96 L986 295.04 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="998" y="194" width="322" height="62" rx="14" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="1016" y="220" class="sans" font-size="17" fill="#141413" font-weight="700">Stop classifier</text>
+  <text x="1016" y="244" class="sans" font-size="16" fill="#5E5D59">“Danke Claude” · “Danke ChatGPT”</text>
+  <rect x="998" y="270" width="322" height="62" rx="14" fill="#FFFFFF" stroke="#D97757" stroke-width="2"/>
+  <text x="1016" y="296" class="sans" font-size="17" fill="#141413" font-weight="700">Wake classifier</text>
+  <text x="1016" y="320" class="sans" font-size="16" fill="#5E5D59">“Hey Claude” · “Hey ChatGPT”</text>
+  <path d="M1159 333 L1159 411" fill="none" stroke="#D97757" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1159 418 L1152.8 408 L1165.2 408 Z" fill="#D97757" stroke="#D97757" stroke-width="2" stroke-linejoin="round"/>
+  <text x="1173" y="398" class="sans" font-size="16" fill="#B95B3C" font-weight="600">wake word</text>
+  <rect x="1004" y="422" width="340" height="108" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="1026" y="458" class="sans" font-size="19" fill="#141413" font-weight="700">Vosk</text>
+  <text x="1026" y="484" class="sans" font-size="16" fill="#5E5D59"><tspan x="1026">offline speech recognition</tspan><tspan x="1026" dy="22">German or English</tspan></text>
+  <path d="M1002 476 L974.3 476" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M968 476 L977 470.42 L977 481.58 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="744" y="422" width="220" height="108" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="764" y="458" class="sans" font-size="19" fill="#141413" font-weight="700">Command parser</text>
+  <text x="764" y="484" class="sans" font-size="16" fill="#5E5D59"><tspan x="764">play, radio, timer,</tspan><tspan x="764" dy="22">alarm, louder …</tspan></text>
+  <path d="M742 476 L644.3 476" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M638 476 L647 470.42 L647 481.58 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <text x="691" y="464" class="sans" font-size="16" fill="#5E5D59" text-anchor="middle">no command</text>
+  <rect x="364" y="422" width="270" height="108" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="384" y="458" class="sans" font-size="18" fill="#141413" font-weight="700">Accessibility service</text>
+  <text x="384" y="484" class="sans" font-size="16" fill="#5E5D59"><tspan x="384">opens Claude or ChatGPT,</tspan><tspan x="384" dy="22">taps the voice-mode button</tspan></text>
+  <path d="M362 476 L341 476" fill="none" stroke="#D97757" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M334 476 L344 469.8 L344 482.2 Z" fill="#D97757" stroke="#D97757" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="56" y="404" width="274" height="144" rx="20" fill="#FBEFE9" stroke="#D97757" stroke-width="2" stroke-dasharray="6 6"/>
+  <path transform="translate(279 421) scale(1.25)" d="M7 18.5h10a4 4 0 0 0 .4-8a6 6 0 0 0-11.5 1.8A3.4 3.4 0 0 0 7 18.5z" fill="none" stroke="#D97757" stroke-width="1.76" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="446" class="serif" font-size="24" fill="#141413">Voice mode</text>
+  <text x="80" y="476" class="sans" font-size="16" fill="#5E5D59"><tspan x="80">Claude or ChatGPT,</tspan><tspan x="80" dy="22">speech to speech</tspan></text>
+  <rect x="80" y="510" width="71" height="26" rx="13" fill="#D97757"/>
+  <text x="115.5" y="528" class="sans" font-size="16" fill="#FFFFFF" font-weight="700" text-anchor="middle">cloud</text>
+  <path d="M150 558.3 L150 585.7" fill="none" stroke="#D97757" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 592 L144.42 583 L155.58 583 Z" fill="#D97757" stroke="#D97757" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M150 552 L155.58 561 L144.42 561 Z" fill="#D97757" stroke="#D97757" stroke-width="2" stroke-linejoin="round"/>
+  <text x="166" y="578" class="sans" font-size="16" fill="#B95B3C" font-weight="600">mutes · ends</text>
+  <rect x="56" y="596" width="420" height="252" rx="20" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(79 619) scale(1.08)" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11" fill="none" stroke="#D97757" stroke-width="2.03" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="118" y="640" class="sans" font-size="21" fill="#141413" font-weight="700">EchoGuard</text>
+  <circle cx="86" cy="677" r="3.5" fill="#D97757"/>
+  <text x="102" y="682" class="sans" font-size="16" fill="#141413"><tspan x="102">watches the speaker output</tspan><tspan x="102" dy="22">(Visualizer)</tspan></text>
+  <circle cx="86" cy="737" r="3.5" fill="#D97757"/>
+  <text x="102" y="742" class="sans" font-size="16" fill="#141413"><tspan x="102">mutes the assistant's mic</tspan><tspan x="102" dy="22">while it talks</tspan></text>
+  <circle cx="86" cy="797" r="3.5" fill="#D97757"/>
+  <text x="102" y="802" class="sans" font-size="16" fill="#141413"><tspan x="102">ends after 10 s silence,</tspan><tspan x="102" dy="22">the stop word or the wake word</tspan></text>
+  <path d="M854 532 L854 567.7" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M854 574 L848.42 565 L859.58 565 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <text x="868" y="560" class="sans" font-size="16" fill="#5E5D59">command</text>
+  <path d="M614 586 L1238 586" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M614 586 L614 596.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M614 602 L609.04 594 L618.96 594 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="516" y="604" width="196" height="76" rx="14" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(534 619) scale(1)" d="M9 18.2V5.6l10-2v12.4M9 18.2a2.6 2.6 0 1 1-5.2 0a2.6 2.6 0 1 1 5.2 0zM19 16a2.6 2.6 0 1 1-5.2 0a2.6 2.6 0 1 1 5.2 0z" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="568" y="637" class="sans" font-size="17" fill="#141413" font-weight="700">Spotify</text>
+  <text x="534" y="664" class="sans" font-size="16" fill="#5E5D59">“play Queen”</text>
+  <path d="M822 586 L822 596.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M822 602 L817.04 594 L826.96 594 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="724" y="604" width="196" height="76" rx="14" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(742 619) scale(1)" d="M4 9.2h16v10.3H4zM6.5 9.2l11-5M14.5 14.4a2.2 2.2 0 1 0 .01 0M7 13h3.6M7 16h3.6" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="776" y="637" class="sans" font-size="17" fill="#141413" font-weight="700">Internet radio</text>
+  <text x="742" y="664" class="sans" font-size="16" fill="#5E5D59">radio-browser.info</text>
+  <path d="M1030 586 L1030 596.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1030 602 L1025.04 594 L1034.96 594 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="932" y="604" width="196" height="76" rx="14" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(950 619) scale(1)" d="M12 21a8 8 0 1 0 0-16a8 8 0 0 0 0 16zM12 9v4.2l2.6 1.6M9.5 2.8h5" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="984" y="637" class="sans" font-size="17" fill="#141413" font-weight="700">Timer</text>
+  <text x="950" y="664" class="sans" font-size="16" fill="#5E5D59">“timer 5 minutes”</text>
+  <path d="M1238 586 L1238 596.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1238 602 L1233.04 594 L1242.96 594 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="1140" y="604" width="196" height="76" rx="14" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(1158 619) scale(1)" d="M12 20.5a7.5 7.5 0 1 0 0-15a7.5 7.5 0 0 0 0 15zM12 9v4l2.5 1.6M4 5.6l3-2.6M20 5.6l-3-2.6M6.5 19l-1.6 1.8M17.5 19l1.6 1.8" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1192" y="637" class="sans" font-size="17" fill="#141413" font-weight="700">Alarm</text>
+  <text x="1158" y="664" class="sans" font-size="16" fill="#5E5D59">“wake me at 7”</text>
+  <path d="M1030 682 L1030 752.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1030 758 L1025.04 750 L1034.96 750 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M1238 682 L1238 752.4" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1238 758 L1233.04 750 L1242.96 750 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="516" y="760" width="816" height="88" rx="20" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(538 790) scale(1.17)" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18zM12 7v5l3.2 2" fill="none" stroke="#D97757" stroke-width="1.89" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="582" y="798" class="sans" font-size="20" fill="#141413" font-weight="700">Spot Clock</text>
+  <text x="582" y="824" class="sans" font-size="16" fill="#5E5D59">shows now playing, timers, alarms, weather and the assistant state</text>
+  <path d="M1344 300 L1357 300 Q1370 300 1370 313 L1370 778 Q1370 792 1356 792 L1340.3 792" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+  <path d="M1334 792 L1343 786.42 L1343 797.58 Z" fill="#D97757" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round"/>
+  <text x="1310" y="798" class="sans" font-size="16" fill="#B95B3C" font-weight="600" text-anchor="end">STATE broadcast: listening / active</text>
+</svg>

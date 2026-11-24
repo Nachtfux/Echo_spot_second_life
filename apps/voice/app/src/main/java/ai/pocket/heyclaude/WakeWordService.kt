@@ -1,6 +1,8 @@
 package ai.pocket.heyclaude
 
-import ai.pocket.heyclaude.launch.ClaudeLauncher
+import ai.pocket.heyclaude.launch.AssistantLauncher
+import ai.pocket.heyclaude.command.Action
+import ai.pocket.heyclaude.command.CommandParser
 import ai.pocket.heyclaude.command.VoiceCommands
 import ai.pocket.heyclaude.wake.OpenWakeWordDetector
 import ai.pocket.heyclaude.wake.SilenceGate
@@ -43,9 +45,12 @@ import kotlin.math.sqrt
  * Foreground service that listens for the wake word.
  *
  * Loop (background thread): open AudioRecord -> feed frames of
- * detector.frameSamples -> on 2 consecutive frames above the threshold:
- * release the mic, reset the detector, launch Claude -> wait for
- * [Constants.ACTION_RESUME] (or the resume timeout) -> listen again.
+ * detector.frameSamples -> on Prefs.triggerFrames consecutive frames above the threshold:
+ * release the mic, reset the detector, launch the assistant app (Claude or ChatGPT,
+ * [Prefs.assistant]) -> wait for [Constants.ACTION_RESUME] (or the resume timeout) -> listen again.
+ *
+ * [ACTION_SET_ASSISTANT] / [ACTION_SET_LANG] switch the assistant (reloading the wake and stop
+ * models) and the command language (reloading the Vosk model) without a reinstall.
  */
 class WakeWordService : Service() {
 
@@ -61,6 +66,10 @@ class WakeWordService : Service() {
         private const val FALSE_ALARM_WORDS = 2
         @Volatile var falseAlarms = 0
         const val ACTION_SET_THRESHOLD = "ai.pocket.heyclaude.SET_THRESHOLD"
+        /** `--es assistant claude|chatgpt` */
+        const val ACTION_SET_ASSISTANT = "ai.pocket.heyclaude.SET_ASSISTANT"
+        /** `--es lang de|en` */
+        const val ACTION_SET_LANG = "ai.pocket.heyclaude.SET_LANG"
 
         /** Debug: log the mic level about twice a second (toggle via ACTION_LEVEL_LOG). */
         @Volatile var levelLog = false
@@ -68,7 +77,8 @@ class WakeWordService : Service() {
         private const val CHANNEL_ID = "listening"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLE_RATE = 16_000
-        private const val TRIGGER_FRAMES = 2
+        /** Stop word: consecutive frames above its threshold (the wake word uses Prefs.triggerFrames). */
+        private const val STOP_TRIGGER_FRAMES = 2
         /** Ignore triggers for the first frames after (re)start: ~1 s @ 80 ms. */
         private const val WARMUP_FRAMES = 12
         /** All-zero audio for this long => the OS is probably silencing us. */
@@ -102,12 +112,44 @@ class WakeWordService : Service() {
                 ContextCompat.startForegroundService(ctx, Intent(ctx, WakeWordService::class.java))
             } catch (e: Exception) {
                 Log.e(Constants.TAG, "Could not start WakeWordService", e)
-                lastError = "Start fehlgeschlagen: ${e.message}"
+                lastError = ctx.getString(R.string.err_start_failed, e.message)
             }
         }
 
         fun stop(ctx: Context) {
             ctx.stopService(Intent(ctx, WakeWordService::class.java))
+        }
+
+        /**
+         * Persists a [ACTION_SET_ASSISTANT] / [ACTION_SET_LANG] intent to [Prefs]. Returns false
+         * (and logs why) for unknown values. Also used by [SettingsReceiver] while the service is
+         * not running.
+         */
+        fun saveSetting(ctx: Context, intent: Intent): Boolean {
+            when (intent.action) {
+                ACTION_SET_ASSISTANT -> {
+                    val raw = intent.getStringExtra("assistant")
+                    val assistant = Assistant.fromId(raw)
+                    if (assistant == null) {
+                        Log.w(Constants.TAG, "SET_ASSISTANT: unknown assistant '$raw' (${Assistant.entries.joinToString("|") { it.id }})")
+                        return false
+                    }
+                    Prefs.setAssistant(ctx, assistant)
+                    Log.i(Constants.TAG, "Assistant -> ${assistant.id} (${Prefs.assistantPackage(ctx, assistant)})")
+                    return true
+                }
+                ACTION_SET_LANG -> {
+                    val lang = intent.getStringExtra("lang")?.trim()?.lowercase()
+                    if (lang == null || lang !in CommandParser.LANGS) {
+                        Log.w(Constants.TAG, "SET_LANG: unsupported language '$lang' (${CommandParser.LANGS.joinToString("|")})")
+                        return false
+                    }
+                    Prefs.setCommandLang(ctx, lang)
+                    Log.i(Constants.TAG, "Command language -> $lang (${VoiceCommands.modelDir(lang)})")
+                    return true
+                }
+            }
+            return false
         }
 
         /** Same path as a detected wake word (releases the mic first). */
@@ -127,6 +169,8 @@ class WakeWordService : Service() {
     @Volatile private var paused = false
     @Volatile private var resumeRequested = false
     @Volatile private var manualTrigger = false
+    /** Set by SET_ASSISTANT: the worker reloads the wake + stop models of the active assistant. */
+    @Volatile private var reloadRequested = false
     @Volatile private var pendingCommand: String? = null
     @Volatile private var musicWasPlaying = false
     private var worker: Thread? = null
@@ -145,20 +189,36 @@ class WakeWordService : Service() {
                 ACTION_SET_THRESHOLD -> {
                     if (intent.hasExtra("wake")) Prefs.setThreshold(context, intent.getFloatExtra("wake", 0.5f))
                     if (intent.hasExtra("stop")) Prefs.setStopThreshold(context, intent.getFloatExtra("stop", 0.5f))
-                    Log.i(Constants.TAG, "Thresholds: wake=${Prefs.threshold(context)} stop=${Prefs.stopThreshold(context)}")
+                    if (intent.hasExtra("frames")) Prefs.setTriggerFrames(context, intent.getIntExtra("frames", Prefs.DEFAULT_TRIGGER_FRAMES))
+                    if (intent.hasExtra("new_chat")) Prefs.setNewChatEachSession(context, intent.getBooleanExtra("new_chat", true))
+                    Log.i(Constants.TAG, "Thresholds: wake=${Prefs.threshold(context)} stop=${Prefs.stopThreshold(context)} frames=${Prefs.triggerFrames(context)} newChat=${Prefs.newChatEachSession(context)}")
                 }
                 // Test hook: adb shell am broadcast -a ai.pocket.heyclaude.COMMAND --es text "spiel queen"
                 ACTION_COMMAND -> {
                     val text = intent.getStringExtra("text").orEmpty()
                     val action = VoiceCommands.parse(text)
-                    Log.i(Constants.TAG, "Test command '$text' -> $action")
+                    Log.i(Constants.TAG, "Test command '$text' (${VoiceCommands.parser.lang}) -> $action")
                     if (action != null) VoiceCommands.execute(this@WakeWordService, action)
+                }
+                // Setup hook: adb shell am broadcast -a ai.pocket.heyclaude.SET_ASSISTANT -p ai.pocket.heyclaude --es assistant chatgpt
+                ACTION_SET_ASSISTANT -> if (saveSetting(context, intent)) reloadModels()
+                // Setup hook: adb shell am broadcast -a ai.pocket.heyclaude.SET_LANG -p ai.pocket.heyclaude --es lang en
+                ACTION_SET_LANG -> if (saveSetting(context, intent)) {
+                    VoiceCommands.setLanguage(context, Prefs.commandLang(context))
                 }
             }
         }
     }
 
-    /** Tells the Spot clock whether we listen (orange centre) or Claude is talking (pulse). */
+    /** Assistant switched: the worker reloads the wake and stop models (see [workerLoop]). */
+    private fun reloadModels() {
+        Log.i(Constants.TAG, "Reloading wake/stop models for ${Prefs.assistant(this).id}")
+        reloadRequested = true
+        synchronized(lock) { lock.notifyAll() }
+        sendClockState()
+    }
+
+    /** Tells the Spot clock whether we listen (orange centre) or the assistant is talking (pulse). */
     private fun sendClockState(s: State = state) {
         val value = when (s) {
             State.LISTENING -> "listening"
@@ -169,7 +229,8 @@ class WakeWordService : Service() {
             sendBroadcast(
                 Intent(Constants.ACTION_STATE)
                     .setPackage(Constants.CLOCK_PACKAGE)
-                    .putExtra("state", value),
+                    .putExtra("state", value)
+                    .putExtra("assistant", Prefs.assistant(this).displayName),
             )
         } catch (e: Exception) {
             Log.w(Constants.TAG, "clock state broadcast failed", e)
@@ -192,6 +253,8 @@ class WakeWordService : Service() {
                 addAction(ACTION_LEVEL_LOG)
                 addAction(ACTION_COMMAND)
                 addAction(ACTION_SET_THRESHOLD)
+                addAction(ACTION_SET_ASSISTANT)
+                addAction(ACTION_SET_LANG)
             },
         )
         receiverRegistered = true
@@ -215,7 +278,7 @@ class WakeWordService : Service() {
                 return START_NOT_STICKY
             }
             ACTION_TRIGGER_NOW -> {
-                if (paused) launchClaude() else manualTrigger = true
+                if (paused) launchAssistant() else manualTrigger = true
             }
         }
         ensureWorker()
@@ -271,16 +334,28 @@ class WakeWordService : Service() {
         var backoffMs = 1_000L
         try {
             while (!stopRequested) {
+                if (reloadRequested) {
+                    // SET_ASSISTANT: drop the models; they are loaded again for the new assistant below.
+                    reloadRequested = false
+                    try {
+                        detector?.close()
+                    } catch (e: Throwable) {
+                        Log.w(Constants.TAG, "Detector close failed", e)
+                    }
+                    detector = null
+                    stopModelMissingLogged = false
+                }
                 if (detector == null) {
                     detector = try {
-                        OpenWakeWordDetector(this).also {
+                        val assistant = Prefs.assistant(this)
+                        OpenWakeWordDetector(this, assistant.wakeModelFile).also {
                             modelName = it.modelName
-                            Log.i(Constants.TAG, "Detector ready, model=${it.modelName}")
+                            Log.i(Constants.TAG, "Detector ready for ${assistant.id}, model=${it.modelName}")
                             VoiceCommands.preload(this)
                         }
                     } catch (e: Throwable) {
                         Log.e(Constants.TAG, "Detector init failed", e)
-                        fail("Modell konnte nicht geladen werden: ${e.message}")
+                        fail(getString(R.string.err_model, e.message))
                         sleepInterruptibly(backoffMs)
                         backoffMs = min(backoffMs * 2, MAX_BACKOFF_MS)
                         continue
@@ -306,8 +381,8 @@ class WakeWordService : Service() {
                             // talk that is no command means the wake word fired on room conversation.
                             words > FALSE_ALARM_WORDS -> ignoreFalseAlarm(cmd!!)
                             else -> {
-                                if (!cmd.isNullOrEmpty()) Log.i(Constants.TAG, "Short reply '$cmd' -> Claude")
-                                launchClaude()
+                                if (!cmd.isNullOrEmpty()) Log.i(Constants.TAG, "Short reply '$cmd' -> assistant")
+                                launchAssistant()
                             }
                         }
                     }
@@ -336,7 +411,7 @@ class WakeWordService : Service() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            fail("Mikrofon-Berechtigung fehlt")
+            fail(getString(R.string.err_mic_permission))
             return null
         }
         val minBuf = AudioRecord.getMinBufferSize(
@@ -367,7 +442,7 @@ class WakeWordService : Service() {
                 Log.w(Constants.TAG, "AudioRecord source $source failed", e)
             }
         }
-        fail("Mikrofon konnte nicht geöffnet werden")
+        fail(getString(R.string.err_mic_open))
         return null
     }
 
@@ -385,9 +460,9 @@ class WakeWordService : Service() {
         setState(State.LISTENING)
         val gate = SilenceGate(frame.size).also { this.gate = it }
         try {
-            while (!stopRequested && !paused) {
+            while (!stopRequested && !paused && !reloadRequested) {
                 if (!readFully(rec, frame)) {
-                    fail("Mikrofon-Lesefehler")
+                    fail(getString(R.string.err_mic_read))
                     // A long healthy run before the error: retry quickly.
                     return if (SystemClock.elapsedRealtime() - startedAt > 10_000) {
                         ListenResult.HEALTHY_EXIT
@@ -427,7 +502,7 @@ class WakeWordService : Service() {
                     for (f in gated.frames) score = detector.process(f)
                 } catch (e: Throwable) {
                     Log.e(Constants.TAG, "Detector process failed", e)
-                    fail("Erkennung fehlgeschlagen: ${e.message}")
+                    fail(getString(R.string.err_detect, e.message))
                     detector.reset()
                     return ListenResult.MIC_ERROR
                 }
@@ -443,8 +518,8 @@ class WakeWordService : Service() {
 
                 val threshold = Prefs.threshold(this)
                 consecutive = if (frames > WARMUP_FRAMES && score > threshold) consecutive + 1 else 0
-                if (consecutive >= TRIGGER_FRAMES) {
-                    Log.i(Constants.TAG, "Wake word detected (score=$score, threshold=$threshold)")
+                if (consecutive >= Prefs.triggerFrames(this)) {
+                    Log.i(Constants.TAG, "Wake word detected (score=$score, threshold=$threshold, frames=$consecutive)")
                     triggerCount++
                     lastTriggerAt = System.currentTimeMillis()
                     pendingCommand = captureCommand(rec, frame)
@@ -482,19 +557,19 @@ class WakeWordService : Service() {
     // ------------------------------------------------------------------
 
     /** Called on the worker thread after the mic has been released. */
-    private fun launchClaude() {
+    private fun launchAssistant() {
         paused = true
         resumeRequested = false
         setState(State.PAUSED)
         mainHandler.post {
             val ok = try {
-                ClaudeLauncher.launch(this)
+                AssistantLauncher.launch(this)
             } catch (e: Exception) {
-                Log.e(Constants.TAG, "ClaudeLauncher.launch threw", e)
+                Log.e(Constants.TAG, "AssistantLauncher.launch threw", e)
                 false
             }
             if (!ok) {
-                lastError = "Claude-App nicht gefunden (${Prefs.claudePackage(this)})"
+                lastError = getString(R.string.assistant_missing, Prefs.assistant(this).displayName, Prefs.assistantPackage(this))
                 Log.w(Constants.TAG, lastError!!)
                 mainHandler.postDelayed({ requestResume("launch failed") }, 2_000)
             }
@@ -527,14 +602,15 @@ class WakeWordService : Service() {
         }
         resumeRequested = false
         paused = false
-        // Give the Claude app a moment to release the microphone.
+        // Give the assistant app a moment to release the microphone.
         sleepInterruptibly(500)
     }
 
     /**
-     * While a Claude conversation runs (paused), keep listening for the wake word: saying it
-     * again ends the conversation (EchoGuard presses "Beenden"). We hear the room even while
-     * EchoGuard has muted Claude's own mic, so this also works while Claude is talking.
+     * While an assistant conversation runs (paused), keep listening for the wake word: saying it
+     * again (or the stop word) ends the conversation (EchoGuard presses the end button). We hear
+     * the room even while EchoGuard has muted the assistant's own mic, so this also works while
+     * the assistant is talking.
      */
     private fun listenForStop(detector: WakeWordDetector) {
         val timeoutMs = Prefs.resumeTimeoutSec(this) * 1000L
@@ -552,14 +628,15 @@ class WakeWordService : Service() {
         var readOk = true
         detector.reset()
         val owd = detector as? OpenWakeWordDetector
-        val hasStop = owd?.attachExtra(this, Constants.STOP_MODEL_FILE) == true
+        val stopModel = Prefs.assistant(this).stopModelFile
+        val hasStop = owd?.attachExtra(this, stopModel) == true
         if (!hasStop && !stopModelMissingLogged) {
             stopModelMissingLogged = true
-            Log.i(Constants.TAG, "No stop word model (${Constants.STOP_MODEL_FILE}); the wake word ends conversations")
+            Log.i(Constants.TAG, "No stop word model ($stopModel); the wake word ends conversations")
         }
         val stopGate = SilenceGate(frame.size)
         try {
-            while (!stopRequested && !resumeRequested) {
+            while (!stopRequested && !resumeRequested && !reloadRequested) {
                 if (SystemClock.elapsedRealtime() > deadline) {
                     Log.i(Constants.TAG, "No RESUME within ${timeoutMs / 1000} s — resuming anyway")
                     break
@@ -594,7 +671,7 @@ class WakeWordService : Service() {
                 val now = SystemClock.elapsedRealtime()
                 val hot = frames > WARMUP_FRAMES && now > cooldownUntil && score > 1f
                 consecutive = if (hot) consecutive + 1 else 0
-                if (consecutive >= TRIGGER_FRAMES) {
+                if (consecutive >= STOP_TRIGGER_FRAMES) {
                     Log.i(Constants.TAG, "Wake/stop word during conversation (score=$score) -> end it")
                     consecutive = 0
                     cooldownUntil = now + 4_000
@@ -610,6 +687,8 @@ class WakeWordService : Service() {
             rec.release()
         }
         if (stopRequested) return
+        // SET_ASSISTANT during a conversation: stay paused; the worker reloads and comes back here.
+        if (reloadRequested && !resumeRequested) return
         if (!readOk && !resumeRequested) {
             waitForResume()                 // mic trouble: fall back to plain waiting
             return
@@ -642,7 +721,7 @@ class WakeWordService : Service() {
     }
 
     private fun ignoreFalseAlarm(text: String) {
-        Log.i(Constants.TAG, "No command in '$text' -> probably a false alarm, not opening Claude")
+        Log.i(Constants.TAG, "No command in '$text' -> probably a false alarm, not opening the assistant")
         falseAlarms++
         VoiceCommands.tone(ToneGenerator.TONE_PROP_NACK)
         if (musicWasPlaying) {
@@ -651,10 +730,10 @@ class WakeWordService : Service() {
         }
     }
 
-    private fun runVoiceCommand(text: String, action: VoiceCommands.Action) {
+    private fun runVoiceCommand(text: String, action: Action) {
         Log.i(Constants.TAG, "Voice command '$text' -> $action")
-        val resume = musicWasPlaying && (action is VoiceCommands.Action.Volume ||
-            action is VoiceCommands.Action.Next || action is VoiceCommands.Action.Previous)
+        val resume = musicWasPlaying && (action is Action.Volume ||
+            action is Action.Next || action is Action.Previous)
         mainHandler.post {
             VoiceCommands.execute(this, action)
             if (resume) {
@@ -702,7 +781,7 @@ class WakeWordService : Service() {
         state = s
         Log.i(Constants.TAG, "State -> $s")
         sendClockState(s)
-        // PAUSED = Claude session in front: guard against Claude hearing itself.
+        // PAUSED = assistant session in front: guard against the assistant hearing itself.
         if (s == State.PAUSED) EchoGuard.start(this) else EchoGuard.stop()
         mainHandler.post {
             if (running) {
@@ -714,7 +793,7 @@ class WakeWordService : Service() {
 
     private fun notificationText(): String = when (state) {
         State.LISTENING -> getString(R.string.notif_listening)
-        State.PAUSED -> getString(R.string.notif_paused)
+        State.PAUSED -> getString(R.string.notif_paused, Prefs.assistant(this).displayName)
         State.ERROR -> lastError ?: getString(R.string.notif_error)
         else -> getString(R.string.notif_starting)
     }

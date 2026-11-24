@@ -1,42 +1,21 @@
-#!/bin/bash
-# backup.sh - full partition backup of the Echo Spot (rook) from TWRP.
+#!/usr/bin/env bash
+# backup.sh - phase "backup": full partition backup of the Echo Spot (rook) from TWRP.
 #
-# Reads every partition from /dev/block/platform/mtk-msdc.0/by-name plus
-# mmcblk0boot0/1, pulls it with adb, checks size (/proc/partitions) and
-# sha256 (device vs. Mac) and writes MANIFEST.txt. READ-ONLY on the device.
+# Dumps every mmcblk0 partition listed in /proc/partitions plus mmcblk0boot0/boot1 with
+# `adb exec-out dd`, checks size (/proc/partitions) and sha256 (Spot vs. computer) and writes
+# backups/<date>/MANIFEST.sha256 (+ PARTITIONS.txt). READ-ONLY on the device.
+# cache is skipped (not needed), userdata only on request (big, personal data).
 #
-# Usage:
-#   tools/spot/backup.sh [--dry-run] [--with-userdata] [outdir]
-#     --dry-run        print the plan only; without a device it uses a
-#                      built-in example map (for testing the script)
-#     --with-userdata  also pull userdata (big, contains personal data)
-#     outdir           default: ./spot-backup-YYYYmmdd-HHMMSS
-#
-# The backup contains device-unique data (serials, keys): keep it private.
-set -euo pipefail
+# The backup contains device-unique data (keys, serials): keep it private, never share it.
+# Sourced by install.sh; running it directly runs "./install.sh backup".
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then exec bash "$(dirname "$0")/../install.sh" backup "$@"; fi
+# shellcheck source-path=SCRIPTDIR source=lib.sh
+[ -n "${ESL_LIB_LOADED:-}" ] || . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-HERE="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib.sh
-. "$HERE/lib.sh"
+ROOK_BYNAME=/dev/block/platform/mtk-msdc.0/by-name
 
-BYNAME=/dev/block/platform/mtk-msdc.0/by-name
-DRY=0; WITH_USERDATA=0; OUT=""
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --dry-run) DRY=1 ;;
-    --with-userdata) WITH_USERDATA=1 ;;
-    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
-    -*) die "Unknown option $1" ;;
-    *) OUT="$1" ;;
-  esac
-  shift
-done
-[ -n "$OUT" ] || OUT="spot-backup-$(date +%Y%m%d-%H%M%S)"
-
-# Example map (name target) and /proc/partitions sizes (1K blocks) used by
-# --dry-run when no device is attached. Layout follows the rook guide;
-# numbers on YOUR device may differ - the real run always reads the device.
-example_map() {
+# Example data for --dry-run (layout of the rook guide; a real run always reads the device).
+_backup_example_map() {
   cat <<'EOF'
 kb /dev/block/mmcblk0p1
 dkb /dev/block/mmcblk0p2
@@ -56,150 +35,154 @@ cache /dev/block/mmcblk0p12
 userdata /dev/block/mmcblk0p13
 EOF
 }
-example_sizes() {
+
+_backup_example_partitions() {
   cat <<'EOF'
-mmcblk0 3817472
-mmcblk0p1 1024
-mmcblk0p2 1024
-mmcblk0p3 1024
-mmcblk0p4 5120
-mmcblk0p5 8192
-mmcblk0p6 5120
-mmcblk0p7 10240
-mmcblk0p8 512
-mmcblk0p9 16384
-mmcblk0p10 16384
-mmcblk0p11 1048576
-mmcblk0p12 442368
-mmcblk0p13 2259968
-mmcblk0boot0 4096
-mmcblk0boot1 4096
+major minor  #blocks  name
+
+ 179        0    3817472 mmcblk0
+ 179        1       1024 mmcblk0p1
+ 179        2       1024 mmcblk0p2
+ 179        3       1024 mmcblk0p3
+ 179        4       5120 mmcblk0p4
+ 179        5       8192 mmcblk0p5
+ 179        6       5120 mmcblk0p6
+ 179        7      10240 mmcblk0p7
+ 179        8        512 mmcblk0p8
+ 179        9      16384 mmcblk0p9
+ 179       10      16384 mmcblk0p10
+ 179       11    1048576 mmcblk0p11
+ 179       12     442368 mmcblk0p12
+ 179       13    2259968 mmcblk0p13
+ 179       32       4096 mmcblk0boot0
+ 179       64       4096 mmcblk0boot1
 EOF
 }
 
-# --------------------------------------------------------------- source ----
-SOURCE=device
-if [ "$DRY" = 1 ]; then
-  if have adb && [ "$(adb_state)" = "recovery" ]; then SOURCE=device; else SOURCE=example; fi
-else
-  need_adb
-  require_single_device
-  st="$(adb_state)"
-  [ "$st" = "recovery" ] || die "Device must be in TWRP (adb get-state = recovery), got '$st'. Hold Volume Up while connecting power."
-fi
-
-if [ "$SOURCE" = device ]; then
-  info "Reading partition map from $BYNAME"
-  # name<space>resolved-target, one per line
-  MAP="$(adb shell "for f in $BYNAME/*; do echo \"\${f##*/} \$(readlink -f \"\$f\")\"; done" | tr -d '\r')"
-  if [ -z "$MAP" ] || printf '%s' "$MAP" | grep -q 'No such file'; then
-    die "Could not read $BYNAME - is this really a rook in TWRP?"
-  fi
-  SIZES="$(adb shell cat /proc/partitions | tr -d '\r' | awk 'NF==4 && $1 ~ /^[0-9]+$/ {print $4, $3}')"
-  PRODUCT="$(adb shell getprop ro.product.device | tr -d '\r')"
-  case "$PRODUCT" in *rook*) ;; *) warn "ro.product.device='$PRODUCT' (expected rook)";; esac
-else
-  warn "DRY RUN without a device in TWRP: using the built-in EXAMPLE map."
-  MAP="$(example_map)"; SIZES="$(example_sizes)"; PRODUCT="rook (example)"
-fi
-
-size_kb() { printf '%s\n' "$SIZES" | awk -v d="$1" '$1 == d {print $2; exit}'; }
-
-# ----------------------------------------------------------------- plan -----
-# Plan lines: "<name> <blockdev> <bytes>"; skipped lines go to SKIPPED.
-PLAN=""; SKIPPED=""; TOTAL=0
-add_plan() {
-  local name="$1" dev="$2" kb bytes
-  kb="$(size_kb "${dev##*/}")"
-  [ -n "$kb" ] || { SKIPPED="${SKIPPED}${name} (${dev}: not in /proc/partitions)
-"; return 0; }
-  bytes=$((kb * 1024))
-  PLAN="${PLAN}${name} ${dev} ${bytes}
-"
-  TOTAL=$((TOTAL + bytes))
+_backup_twrp_help() {
+  msg "The Spot must be running TWRP (after the unlock it is there automatically). Otherwise:" \
+      "Auf dem Spot muss TWRP laufen (nach dem Entsperren ist das automatisch so). Sonst:"
+  howto "$(L "Unplug the Spot's power. Keep the USB cable connected." "Strom des Spot abziehen. USB-Kabel bleibt dran.")" \
+        "$(L "Hold Volume + and plug the power back in. Let go when TWRP appears." \
+             "Lauter gedrückt halten und Strom wieder einstecken. Loslassen, sobald TWRP erscheint.")"
 }
 
-SEEN_DEVS=" "
-while read -r name target; do
-  [ -n "$name" ] || continue
-  case "$target" in
-    /dev/null|"") SKIPPED="${SKIPPED}${name} (-> /dev/null in TWRP, real copy is ${name}_real)
-"; continue ;;
+phase_backup() {
+  local prod map parts plan="" skipped="" total=0 dev blocks bytes label file out stamp
+  local with_userdata=0 free_kb fail=0 got h_dev h_host n=0 count
+  use_usb
+  is_dry || need_adb || return 1
+  if ! is_dry && [ "$(adb_state)" != recovery ]; then
+    _backup_twrp_help
+    wait_adb_state recovery 600 || { err "$(L "TWRP not found." "TWRP nicht gefunden.")"; return 1; }
+  fi
+  prod="$(adb_shq rook getprop ro.product.device)"
+  case "$prod" in
+    *rook*) ok "ro.product.device = $prod" ;;
+    *) err "$(L "ro.product.device='$prod' - this does not look like an Echo Spot (rook) in TWRP. Stopping." \
+                "ro.product.device='$prod' - das sieht nicht nach einem Echo Spot (rook) in TWRP aus. Abbruch.")"
+       return 1 ;;
   esac
-  lname="$(lower "$name")"
-  if [ "$lname" = "userdata" ] && [ "$WITH_USERDATA" = 0 ]; then
-    SKIPPED="${SKIPPED}${name} (personal data; use --with-userdata)
-"; continue
+
+  # by-name map (for readable file names) and /proc/partitions (what is dumped, and the sizes)
+  map="$(adb_shq "$(_backup_example_map)" "for f in $ROOK_BYNAME/*; do echo \"\${f##*/} \$(readlink -f \"\$f\")\"; done")"
+  parts="$(adb_shq "$(_backup_example_partitions)" cat /proc/partitions)"
+  if [ -z "$parts" ]; then err "$(L "Could not read /proc/partitions." "/proc/partitions nicht lesbar.")"; return 1; fi
+
+  if ask_yes_no "$(L "Also back up userdata (about 2 GB; contains the personal data of Fire OS; not needed to restore the Spot)?" \
+                     "Auch userdata sichern (ca. 2 GB; enthält die persönlichen Daten von Fire OS; zum Wiederherstellen nicht nötig)?")" N; then
+    with_userdata=1
   fi
-  if [ "$lname" = "cache" ]; then
-    SKIPPED="${SKIPPED}${name} (cache, not needed)
-"; continue
-  fi
-  case "$SEEN_DEVS" in *" $target "*) SKIPPED="${SKIPPED}${name} (alias of already planned ${target})
-"; continue ;; esac
-  SEEN_DEVS="${SEEN_DEVS}${target} "
-  add_plan "$name" "$target"
-done <<EOF
-$MAP
+
+  # Plan lines: "<dev> <bytes> <label>"
+  while read -r _maj _min blocks dev; do
+    case "$dev" in mmcblk0p[0-9]*|mmcblk0boot0|mmcblk0boot1) ;; *) continue ;; esac
+    case "$blocks" in ''|*[!0-9]*) continue ;; esac
+    label="$(printf '%s\n' "$map" | awk -v d="/dev/block/$dev" '$2 == d {print $1; exit}')"
+    case "$(lower "$label")" in
+      cache) skipped="$skipped $dev($label)"; continue ;;
+      userdata) if [ "$with_userdata" = 0 ]; then skipped="$skipped $dev($label)"; continue; fi ;;
+    esac
+    bytes=$((blocks * 1024))
+    plan="$plan$dev $bytes ${label:--}
+"
+    total=$((total + bytes))
+  done <<EOF
+$parts
 EOF
-add_plan mmcblk0boot0 /dev/block/mmcblk0boot0
-add_plan mmcblk0boot1 /dev/block/mmcblk0boot1
+  count="$(printf '%s' "$plan" | grep -c .)"
+  [ "$count" -gt 0 ] || { err "$(L "No partitions found." "Keine Partitionen gefunden.")"; return 1; }
 
-step "Backup plan ($PRODUCT) -> $OUT"
-printf '%s' "$PLAN" | awk '{printf "     %-14s %-26s %12d bytes\n", $1, $2, $3}'
-if [ -n "$SKIPPED" ]; then
-  info "Skipped:"; printf '%s' "$SKIPPED" | sed 's/^/     - /'
-fi
-info "Total: $((TOTAL / 1024 / 1024)) MiB"
+  stamp="$(date +%Y-%m-%d_%H%M%S)"
+  out="$BACKUP_DIR/$stamp"
+  step "$(L "Backup plan" "Sicherungsplan"): $count $(L "partitions" "Partitionen"), $((total / 1024 / 1024)) MiB -> $(rel "$out")/"
+  printf '%s' "$plan" | awk '{printf "     %-14s %-12s %12d bytes\n", $1, $3, $2}'
+  [ -n "$skipped" ] && hint "$(L "skipped" "ausgelassen"):$skipped"
+  warn "$(L "The backup contains device-unique data (keys, serial numbers). Keep it private - never upload or share it." \
+            "Die Sicherung enthält gerätespezifische Daten (Schlüssel, Seriennummern). Privat aufbewahren - nie hochladen oder teilen.")"
 
-if [ "$DRY" = 1 ]; then
-  ok "Dry run - nothing pulled."
-  exit 0
-fi
-
-# Free space check (df -k works on macOS and Linux)
-mkdir -p "$OUT"
-FREE_KB="$(df -k "$OUT" | awk 'NR==2 {print $4}')"
-if [ -n "$FREE_KB" ] && [ $((FREE_KB * 1024)) -lt "$TOTAL" ]; then
-  die "Not enough free space in $OUT ($((FREE_KB / 1024)) MiB free)."
-fi
-confirm "Pull $((TOTAL / 1024 / 1024)) MiB into $OUT now? (read-only on the Spot)" || { info "Aborted."; exit 0; }
-
-MANIFEST="$OUT/MANIFEST.txt"
-{
-  echo "# Echo Spot (rook) partition backup"
-  echo "# date:    $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  echo "# device:  $PRODUCT  serial: $(adb get-serialno 2>/dev/null | tr -d '\r')"
-  echo "# by-name map:"
-  printf '%s\n' "$MAP" | sed 's/^/#   /'
-  echo "# name  blockdev  bytes  sha256  file"
-} > "$MANIFEST"
-
-FAIL=0
-while read -r name dev bytes; do
-  [ -n "$name" ] || continue
-  file="$OUT/$name.img"
-  step "$name ($dev, $((bytes / 1024)) KiB)"
-  adb pull "$dev" "$file" </dev/null >/dev/null
-  got="$(file_size "$file")"
-  if [ "$got" != "$bytes" ]; then
-    err "size mismatch: host $got != device $bytes"; FAIL=$((FAIL + 1)); continue
+  if ! is_dry; then
+    mkdir -p "$out" || return 1
+    free_kb="$(df -Pk "$out" | awk 'NR==2 {print $4}')"
+    if [ -n "$free_kb" ] && [ $((free_kb * 1024)) -lt "$total" ]; then
+      err "$(L "Not enough free space ($((free_kb / 1024)) MiB free)." "Nicht genug freier Speicher ($((free_kb / 1024)) MiB frei).")"
+      return 1
+    fi
   fi
-  h_dev="$(sha256_remote "$dev")"
-  h_host="$(sha256_local "$file")"
-  if [ -z "$h_dev" ] || [ "$h_dev" != "$h_host" ]; then
-    err "sha256 mismatch: device ${h_dev:-?} host $h_host"; FAIL=$((FAIL + 1)); continue
+  ask_yes_no "$(L "Copy $((total / 1024 / 1024)) MiB from the Spot now (read-only on the Spot, takes a few minutes)?" \
+                  "Jetzt $((total / 1024 / 1024)) MiB vom Spot kopieren (nur lesend, dauert ein paar Minuten)?")" Y || return 1
+
+  if ! is_dry; then
+    {
+      echo "# Echo Spot (rook) partition backup made by install.sh - PRIVATE, never share"
+      echo "# date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "# product: $prod  twrp: $(adb_shq "" getprop ro.twrp.version)"
+      echo "# restore help: docs/en/09-troubleshooting.md"
+      echo "# --- $ROOK_BYNAME"
+      printf '%s\n' "$map"
+      echo "# --- /proc/partitions"
+      printf '%s\n' "$parts"
+    } > "$out/PARTITIONS.txt"
+    : > "$out/MANIFEST.sha256"
   fi
-  ok "size ok, sha256 $h_host"
-  echo "$name $dev $bytes $h_host $name.img" >> "$MANIFEST"
-done <<EOF
-$PLAN
+
+  while read -r dev bytes label; do
+    [ -n "$dev" ] || continue
+    n=$((n + 1))
+    if [ "$label" = "-" ]; then file="$dev.img"; else file="${dev}_${label}.img"; fi
+    info "[$n/$count] $dev ($label, $((bytes / 1024)) KiB)"
+    if is_dry; then
+      adbx exec-out "dd if=/dev/block/$dev bs=1048576 2>/dev/null"
+      printf '%s\n' "${C_DIM}+   > $(rel "$out")/$file${C_RST}" >&2
+      adb_shq "" sha256sum "/dev/block/$dev" >/dev/null
+      continue
+    fi
+    adbx exec-out "dd if=/dev/block/$dev bs=1048576 2>/dev/null" > "$out/$file"
+    got="$(file_size "$out/$file")"
+    if [ "$got" != "$bytes" ]; then
+      err "$(L "size mismatch" "Größe stimmt nicht"): $(L "computer" "Computer") $got != Spot $bytes"
+      fail=$((fail + 1)); continue
+    fi
+    h_dev="$(adb_shq "" sha256sum "/dev/block/$dev" | awk '{print $1}')"
+    h_host="$(sha256_local "$out/$file")"
+    if [ -z "$h_dev" ] || [ "$h_dev" != "$h_host" ]; then
+      err "$(L "sha256 mismatch" "sha256 stimmt nicht"): Spot ${h_dev:-?} / $(L "computer" "Computer") $h_host"
+      fail=$((fail + 1)); continue
+    fi
+    printf '%s  %s\n' "$h_host" "$file" >> "$out/MANIFEST.sha256"
+    ok "$(L "size and sha256 ok" "Größe und sha256 ok")"
+  done <<EOF
+$plan
 EOF
 
-( cd "$OUT" && printf '%s  MANIFEST.txt\n' "$(sha256_local MANIFEST.txt)" > MANIFEST.txt.sha256 )
-echo
-if [ "$FAIL" -gt 0 ]; then
-  die "$FAIL partition(s) failed verification - re-run before flashing anything!"
-fi
-ok "Backup complete: $OUT (MANIFEST.txt). Copy it somewhere safe and keep it private."
-hint "Next: tools/spot/flash-lineage.sh lineage-18.1-*-rook.zip <sha256>"
+  if [ "$fail" -gt 0 ]; then
+    err "$(L "$fail partition(s) failed verification - run ./install.sh backup again before flashing anything!" \
+             "$fail Partition(en) nicht korrekt - ./install.sh backup erneut ausführen, bevor irgendetwas geflasht wird!")"
+    return 1
+  fi
+  ok "$(L "Backup complete" "Sicherung fertig"): $(rel "$out")/ (MANIFEST.sha256)"
+  hint "$(L "Copy this folder to a safe place (e.g. an external drive). You need it to restore or unbrick the Spot." \
+            "Diesen Ordner an einen sicheren Ort kopieren (z. B. externe Festplatte). Er wird zum Wiederherstellen gebraucht.")"
+  hint "$(L "Check later with: (cd $(rel "$out") && shasum -a 256 -c MANIFEST.sha256)" \
+            "Später prüfen mit: (cd $(rel "$out") && shasum -a 256 -c MANIFEST.sha256)")"
+}

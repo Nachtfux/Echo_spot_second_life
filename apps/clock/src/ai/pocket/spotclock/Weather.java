@@ -21,7 +21,8 @@ import java.util.TimeZone;
 /**
  * Today's weather from Open-Meteo (free, no API key). Fetched at most every
  * 15 minutes, cached in SharedPreferences so the clock has data right after a
- * restart. The location (lat/lon) is set once via ClockActivity extras.
+ * restart. The location (lat/lon) is set once via ClockActivity extras; there is no
+ * default location, so without one nothing is fetched and the face shows placeholders.
  */
 final class Weather {
     private static final String TAG = "SpotClock";
@@ -152,20 +153,20 @@ final class Weather {
         return r;
     }
 
-    /** WMO weather code -> short German label (upper case, fits a complication). */
-    static String label(int code) {
-        if (code == 0) return "KLAR";
-        if (code == 1) return "HEITER";
-        if (code == 2) return "WOLKIG";
-        if (code == 3) return "BEDECKT";
-        if (code == 45 || code == 48) return "NEBEL";
-        if (code >= 51 && code <= 57) return "NIESELN";
-        if (code >= 61 && code <= 67) return "REGEN";
-        if (code >= 71 && code <= 77) return "SCHNEE";
-        if (code >= 80 && code <= 82) return "SCHAUER";
-        if (code == 85 || code == 86) return "SCHNEESCHAUER";
-        if (code >= 95) return "GEWITTER";
-        return "WETTER";
+    /** WMO weather code -> string resource with a short label (upper case, fits a complication). */
+    static int label(int code) {
+        if (code == 0) return R.string.wx_clear;
+        if (code == 1) return R.string.wx_mainly_clear;
+        if (code == 2) return R.string.wx_partly_cloudy;
+        if (code == 3) return R.string.wx_overcast;
+        if (code == 45 || code == 48) return R.string.wx_fog;
+        if (code >= 51 && code <= 57) return R.string.wx_drizzle;
+        if (code >= 61 && code <= 67) return R.string.wx_rain;
+        if (code >= 71 && code <= 77) return R.string.wx_snow;
+        if (code >= 80 && code <= 82) return R.string.wx_showers;
+        if (code == 85 || code == 86) return R.string.wx_snow_showers;
+        if (code >= 95) return R.string.wx_thunderstorm;
+        return R.string.wx_unknown;
     }
 
     static int icon(int code, boolean isDay) {

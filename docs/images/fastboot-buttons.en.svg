@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="fastboot-buttons-title fastboot-buttons-desc" xml:lang="en">
+  <title id="fastboot-buttons-title">Entering fastboot mode on the Echo Spot</title>
+  <desc id="fastboot-buttons-desc">Top view of an Echo Spot with its three top buttons: volume down, microphone off in the middle, volume up. Three fingers press all three at once. Steps: 1 unplug the power supply, 2 press and hold all three buttons, 3 plug the power back in while still holding them. The screen then shows fastboot mode.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <defs>
+    <radialGradient id="fb-top" cx="0.5" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#4A4944"/>
+      <stop offset="0.55" stop-color="#242321"/>
+      <stop offset="1" stop-color="#0F0F0E"/>
+    </radialGradient>
+    <linearGradient id="fb-fade" x1="0" y1="214" x2="0" y2="272" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="fb-fingers" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="700">
+      <rect x="0" y="214" width="1200" height="486" fill="url(#fb-fade)"/>
+    </mask>
+  </defs>
+  <rect x="2" y="2" width="1196" height="696" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="78" class="serif" font-size="34" fill="#141413">Fastboot: hold all three buttons</text>
+  <text x="56" y="112" class="sans" font-size="18" fill="#5E5D59">Echo Spot seen from above</text>
+  <path d="M168.47 546.88 A192 192 0 1 1 463.53 546.88 Z" transform="translate(6 10)" fill="#141413" fill-opacity="0.10"/>
+  <path d="M168.47 546.88 A192 192 0 1 1 463.53 546.88 Z" fill="url(#fb-top)"/>
+  <rect x="174.47" y="537.88" width="283.06" height="9" rx="4.5" fill="#080808" stroke="#3A3936" stroke-width="1.5"/>
+  <path d="M316 568.88 L316 592.58" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M316 598.88 L310.42 589.88 L321.58 589.88 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="1.6" stroke-linejoin="round"/>
+  <text x="316" y="626.88" class="sans" font-size="17" fill="#5E5D59" text-anchor="middle">front (screen)</text>
+  <circle cx="240" cy="394" r="37" fill="none" stroke="#D97757" stroke-width="2.5" stroke-opacity="0.9"/>
+  <circle cx="240" cy="394" r="48" fill="none" stroke="#D97757" stroke-width="2" stroke-opacity="0.35"/>
+  <circle cx="240" cy="394" r="26" fill="#33322F" stroke="#5A5853" stroke-width="2"/>
+  <circle cx="316" cy="394" r="37" fill="none" stroke="#D97757" stroke-width="2.5" stroke-opacity="0.9"/>
+  <circle cx="316" cy="394" r="48" fill="none" stroke="#D97757" stroke-width="2" stroke-opacity="0.35"/>
+  <circle cx="316" cy="394" r="26" fill="#33322F" stroke="#5A5853" stroke-width="2"/>
+  <circle cx="392" cy="394" r="37" fill="none" stroke="#D97757" stroke-width="2.5" stroke-opacity="0.9"/>
+  <circle cx="392" cy="394" r="48" fill="none" stroke="#D97757" stroke-width="2" stroke-opacity="0.35"/>
+  <circle cx="392" cy="394" r="26" fill="#33322F" stroke="#5A5853" stroke-width="2"/>
+  <path d="M231 403 L249 403" fill="none" stroke="#FAF9F5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path transform="translate(306 392) scale(0.83)" d="M12 3.2a3 3 0 0 1 3 3v5.6a3 3 0 0 1-6 0V6.2a3 3 0 0 1 3-3zM6 11.4a6 6 0 0 0 12 0M12 17.4v3.4M8.8 20.8h6.4M4 4l16 16" fill="none" stroke="#FAF9F5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M383 403 L401 403" fill="none" stroke="#FAF9F5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M392 394 L392 412" fill="none" stroke="#FAF9F5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <g mask="url(#fb-fingers)">
+  <g transform="rotate(7 240 392)">
+  <path d="M218 196 V370 a22 22 0 0 0 44 0 V196" fill="#F2E7DD" stroke="#B0AEA5" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="227.24" y="348.88" width="25.52" height="27.28" rx="11.44" fill="#FBF6F1" stroke="#B0AEA5" stroke-width="2"/>
+  <path d="M231.2 321.6 L248.8 321.6" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="rotate(0 316 388)">
+  <path d="M294 186 V366 a22 22 0 0 0 44 0 V186" fill="#F2E7DD" stroke="#B0AEA5" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="303.24" y="344.88" width="25.52" height="27.28" rx="11.44" fill="#FBF6F1" stroke="#B0AEA5" stroke-width="2"/>
+  <path d="M307.2 317.6 L324.8 317.6" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="rotate(-7 392 392)">
+  <path d="M370 196 V370 a22 22 0 0 0 44 0 V196" fill="#F2E7DD" stroke="#B0AEA5" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="379.24" y="348.88" width="25.52" height="27.28" rx="11.44" fill="#FBF6F1" stroke="#B0AEA5" stroke-width="2"/>
+  <path d="M383.2 321.6 L400.8 321.6" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <text x="240" y="470" class="sans" font-size="16" fill="#FAF9F5" font-weight="600" text-anchor="middle">vol −</text>
+  <text x="316" y="470" class="sans" font-size="16" fill="#FAF9F5" font-weight="600" text-anchor="middle">mic off</text>
+  <text x="392" y="470" class="sans" font-size="16" fill="#FAF9F5" font-weight="600" text-anchor="middle">vol +</text>
+  <path d="M650 196 L650 404" fill="none" stroke="#DEDBD0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="650" cy="196" r="20" fill="#D97757"/>
+  <text x="650" y="203.2" class="serif" font-size="20" fill="#FFFFFF" font-weight="700" text-anchor="middle">1</text>
+  <text x="690" y="194" class="sans" font-size="21" fill="#141413" font-weight="700">Unplug the power supply</text>
+  <text x="690" y="222" class="sans" font-size="17" fill="#5E5D59">The Spot must be completely off.</text>
+  <circle cx="650" cy="300" r="20" fill="#D97757"/>
+  <text x="650" y="307.2" class="serif" font-size="20" fill="#FFFFFF" font-weight="700" text-anchor="middle">2</text>
+  <text x="690" y="298" class="sans" font-size="21" fill="#141413" font-weight="700">Press and hold all three buttons</text>
+  <text x="690" y="326" class="sans" font-size="17" fill="#5E5D59">vol −, mic off and vol + at the same time</text>
+  <circle cx="650" cy="404" r="20" fill="#D97757"/>
+  <text x="650" y="411.2" class="serif" font-size="20" fill="#FFFFFF" font-weight="700" text-anchor="middle">3</text>
+  <text x="690" y="402" class="sans" font-size="21" fill="#141413" font-weight="700">Plug the power back in, keep holding</text>
+  <text x="690" y="430" class="sans" font-size="17" fill="#5E5D59">Let go when the screen shows fastboot mode.</text>
+  <path d="M650 434 L650 569.5 Q650 582 662.5 582 L675 582" fill="none" stroke="#D97757" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M682 582 L672 588.2 L672 575.8 Z" fill="#D97757" stroke="#D97757" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="769" cy="588" r="76" fill="#141413" fill-opacity="0.08"/>
+  <circle cx="766" cy="582" r="76" fill="#0B0B0A" stroke="#3A3936" stroke-width="3"/>
+  <circle cx="766" cy="582" r="68" fill="#141413"/>
+  <text x="766" y="588" class="mono" font-size="16" fill="#FAF9F5" text-anchor="middle">fastboot mode</text>
+  <text x="866" y="578" class="sans" font-size="17" fill="#5E5D59"><tspan x="866">Now the computer can talk to the</tspan><tspan x="866" dy="24">Spot: fastboot devices lists it.</tspan></text>
+</svg>

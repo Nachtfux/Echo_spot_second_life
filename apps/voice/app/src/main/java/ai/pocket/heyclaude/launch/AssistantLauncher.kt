@@ -8,18 +8,19 @@ import android.os.PowerManager
 import android.util.Log
 
 /**
- * Wakes the screen and brings the official Claude app to the front.
+ * Wakes the screen and brings the active assistant app (Claude or ChatGPT, see [Prefs.assistant])
+ * to the front.
  *
  * Starting an activity from the background is allowed on Android 10+ because the app
- * hosts a bound AccessibilityService (and post-install.sh also grants SYSTEM_ALERT_WINDOW).
+ * hosts a bound AccessibilityService (and the install script also grants SYSTEM_ALERT_WINDOW).
  */
-object ClaudeLauncher {
+object AssistantLauncher {
     private const val WAKE_MS = 10_000L
 
-    /** @return false if the Claude package is not installed / has no launch activity. */
+    /** @return false if the assistant package is not installed / has no launch activity. */
     fun launch(ctx: Context): Boolean {
         val app = ctx.applicationContext
-        val pkg = Prefs.claudePackage(app)
+        val pkg = Prefs.assistantPackage(app)
         val intent = app.packageManager.getLaunchIntentForPackage(pkg)
         if (intent == null) {
             Log.w(Constants.TAG, "Launcher: no launch intent for $pkg (not installed or not visible)")
@@ -36,7 +37,7 @@ object ClaudeLauncher {
         return try {
             app.startActivity(intent)
             Log.i(Constants.TAG, "Launcher: started $pkg (autoTap=$wantTap, a11y=${VoiceModeA11yService.isConnected})")
-            // If Claude was already in front no window-state event may follow; poke the service.
+            // If the assistant was already in front no window-state event may follow; poke the service.
             VoiceModeA11yService.onLaunchRequested()
             true
         } catch (e: Exception) {

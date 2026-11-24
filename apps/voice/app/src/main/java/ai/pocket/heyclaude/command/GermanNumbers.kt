@@ -40,14 +40,6 @@ object GermanNumbers {
     fun digitsAndLetters(text: String): String {
         val words = joinCompounds(text.lowercase()).split(Regex("\\s+")).filter { it.isNotEmpty() }
             .map { w -> parse(w)?.toString() ?: w }
-        val out = StringBuilder()
-        var prevShort = false
-        for (w in words) {
-            val short = w.length == 1 || w.all { it.isDigit() }
-            if (out.isNotEmpty() && !(short && prevShort)) out.append(' ')
-            out.append(w)
-            prevShort = short
-        }
-        return out.toString()
+        return squashSpelled(words)
     }
 }

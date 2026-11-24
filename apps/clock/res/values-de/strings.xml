@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German strings (same keys as values/strings.xml). -->
+<resources>
+    <string name="app_name">Spot-Uhr</string>
+
+    <string name="sun">SONNE</string>
+    <string name="sunrise">AUFGANG</string>
+    <string name="sunset">UNTERGANG</string>
+
+    <string name="weather_loading">LÄDT …</string>
+    <string name="weather_no_location">ORT FEHLT</string>
+
+    <string name="wx_clear">KLAR</string>
+    <string name="wx_mainly_clear">HEITER</string>
+    <string name="wx_partly_cloudy">WOLKIG</string>
+    <string name="wx_overcast">BEDECKT</string>
+    <string name="wx_fog">NEBEL</string>
+    <string name="wx_drizzle">NIESELN</string>
+    <string name="wx_rain">REGEN</string>
+    <string name="wx_snow">SCHNEE</string>
+    <string name="wx_showers">SCHAUER</string>
+    <string name="wx_snow_showers">SCHNEESCHAUER</string>
+    <string name="wx_thunderstorm">GEWITTER</string>
+    <string name="wx_unknown">WETTER</string>
+
+    <string name="rain">REGEN</string>
+    <string name="rain_percent">%1$d %%</string>
+
+    <string name="now_playing_paused">PAUSE</string>
+
+    <string name="alarm_at">WECKER %1$s</string>
+    <string name="ring_timer">TIMER</string>
+    <string name="ring_alarm">WECKER</string>
+    <string name="ring_tap_to_stop">Tippen zum Beenden</string>
+
+    <string name="ring_channel">Timer &amp; Wecker</string>
+    <string name="ring_timer_title">Timer abgelaufen</string>
+    <string name="ring_alarm_title">Wecker</string>
+    <string name="ring_hint">Tippen auf die Uhr oder „Hey %1$s, stopp“</string>
+
+    <string name="back_to_clock">Zur Uhr</string>
+</resources>

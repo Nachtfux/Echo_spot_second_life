@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800" role="img" aria-labelledby="install-flow-title install-flow-desc" xml:lang="en">
+  <title id="install-flow-title">./install.sh: the nine phases</title>
+  <desc id="install-flow-desc">Flow of the nine phases of ./install.sh. doctor checks the tools on your computer. Group Unlock and ROM, done once with the USB cable: unlock (you download the amonet zip and do the three-button trick), backup, flash. Group Android setup: setup (you enable developer options), apps (you log in). Group Spot Second Life, repeatable and over Wi-Fi: voice, clock, verify. Phases marked with a hand need you to do something.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <rect x="2" y="2" width="1396" height="796" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="78" class="serif" font-size="34" fill="#141413">One script, nine phases</text>
+  <text x="56" y="112" class="sans" font-size="18" fill="#5E5D59">./install.sh runs them in order and skips phases that are already done.</text>
+  <rect x="1144" y="50" width="208" height="52" rx="14" fill="#141413"/>
+  <text x="1168" y="83" class="mono" font-size="20" fill="#D97757" font-weight="700">$</text>
+  <text x="1192" y="83" class="mono" font-size="20" fill="#FAF9F5" font-weight="700">./install.sh</text>
+  <rect x="64" y="146" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="98" cy="190" r="17" fill="#141413"/>
+  <text x="98" y="196.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">1</text>
+  <text x="130" y="185" class="mono" font-size="20" fill="#141413" font-weight="700">doctor</text>
+  <text x="130" y="212" class="sans" font-size="16" fill="#5E5D59">Checks the tools on your computer</text>
+  <path d="M252 236 L252 251.7" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M252 258 L246.42 249 L257.58 249 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="512" y="146" width="824" height="88" rx="16" fill="#F0EEE6"/>
+  <circle cx="548" cy="176" r="19" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(536 164) scale(1)" d="M8 14.5V6.6a1.5 1.5 0 0 1 3 0V12M11 11.6V4.6a1.5 1.5 0 0 1 3 0V12M14 12V5.6a1.5 1.5 0 0 1 3 0V12.4M17 12.6V8.6a1.5 1.5 0 0 1 3 0V15a6.3 6.3 0 0 1-6.3 6.3h-1.4a6.3 6.3 0 0 1-4.9-2.4L4.1 15.5a1.6 1.6 0 0 1 2.5-2L8 15.2" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="580" y="182" class="sans" font-size="17" fill="#141413">needs your hands: download, buttons, taps</text>
+  <text x="530" y="216" class="mono" font-size="17" fill="#141413" font-weight="700">--dry-run</text>
+  <text x="640" y="216" class="sans" font-size="17" fill="#141413">prints every command, touches nothing</text>
+  <rect x="48" y="262" width="408" height="420" rx="22" fill="#F0EEE6"/>
+  <text x="72" y="306" class="serif" font-size="25" fill="#141413">Unlock &amp; ROM</text>
+  <text x="72" y="334" class="sans" font-size="16" fill="#5E5D59" font-weight="500">once · needs the USB cable</text>
+  <path transform="translate(405 289) scale(1.08)" d="M12 21V4M12 4l-2.5 3M12 4l2.5 3M12 16.5l-5-3V10M12 14l5-3V8.5M5.8 8.5h2.4v2.4H5.8zM17 8.6a1.2 1.2 0 1 0 0-.01" fill="none" stroke="#5E5D59" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="64" y="362" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#F5DED3" stroke-width="2"/>
+  <circle cx="98" cy="406" r="17" fill="#141413"/>
+  <text x="98" y="412.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">2</text>
+  <text x="130" y="401" class="mono" font-size="20" fill="#141413" font-weight="700">unlock</text>
+  <text x="130" y="428" class="sans" font-size="16" fill="#5E5D59">Download amonet zip, button trick</text>
+  <circle cx="410" cy="392" r="19" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(398 380) scale(1)" d="M8 14.5V6.6a1.5 1.5 0 0 1 3 0V12M11 11.6V4.6a1.5 1.5 0 0 1 3 0V12M14 12V5.6a1.5 1.5 0 0 1 3 0V12.4M17 12.6V8.6a1.5 1.5 0 0 1 3 0V15a6.3 6.3 0 0 1-6.3 6.3h-1.4a6.3 6.3 0 0 1-4.9-2.4L4.1 15.5a1.6 1.6 0 0 1 2.5-2L8 15.2" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M98 448 L98 468" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="64" y="466" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="98" cy="510" r="17" fill="#141413"/>
+  <text x="98" y="516.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">3</text>
+  <text x="130" y="505" class="mono" font-size="20" fill="#141413" font-weight="700">backup</text>
+  <text x="130" y="532" class="sans" font-size="16" fill="#5E5D59">Copies every partition to backups/</text>
+  <path d="M98 552 L98 572" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="64" y="570" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="98" cy="614" r="17" fill="#141413"/>
+  <text x="98" y="620.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">4</text>
+  <text x="130" y="609" class="mono" font-size="20" fill="#141413" font-weight="700">flash</text>
+  <text x="130" y="636" class="sans" font-size="16" fill="#5E5D59">Wipes and installs LineageOS 18.1</text>
+  <path d="M462 472 L483 472" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M490 472 L480 478.2 L480 465.8 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="496" y="262" width="408" height="420" rx="22" fill="#F0EEE6"/>
+  <text x="520" y="306" class="serif" font-size="25" fill="#141413">Android setup</text>
+  <text x="520" y="334" class="sans" font-size="16" fill="#5E5D59" font-weight="500">once · on the Spot's screen</text>
+  <path transform="translate(853 289) scale(1.08)" d="M12 15.2a3.2 3.2 0 1 0 0-6.4a3.2 3.2 0 0 0 0 6.4zM12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8" fill="none" stroke="#5E5D59" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="512" y="362" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#F5DED3" stroke-width="2"/>
+  <circle cx="546" cy="406" r="17" fill="#141413"/>
+  <text x="546" y="412.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">5</text>
+  <text x="578" y="401" class="mono" font-size="20" fill="#141413" font-weight="700">setup</text>
+  <text x="578" y="428" class="sans" font-size="16" fill="#5E5D59">Wizard, Wi-Fi, developer options</text>
+  <circle cx="858" cy="392" r="19" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(846 380) scale(1)" d="M8 14.5V6.6a1.5 1.5 0 0 1 3 0V12M11 11.6V4.6a1.5 1.5 0 0 1 3 0V12M14 12V5.6a1.5 1.5 0 0 1 3 0V12.4M17 12.6V8.6a1.5 1.5 0 0 1 3 0V15a6.3 6.3 0 0 1-6.3 6.3h-1.4a6.3 6.3 0 0 1-4.9-2.4L4.1 15.5a1.6 1.6 0 0 1 2.5-2L8 15.2" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M546 448 L546 468" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="512" y="466" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#F5DED3" stroke-width="2"/>
+  <circle cx="546" cy="510" r="17" fill="#141413"/>
+  <text x="546" y="516.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">6</text>
+  <text x="578" y="505" class="mono" font-size="20" fill="#141413" font-weight="700">apps</text>
+  <text x="578" y="532" class="sans" font-size="16" fill="#5E5D59">Claude or ChatGPT, then log in</text>
+  <circle cx="858" cy="496" r="19" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(846 484) scale(1)" d="M8 14.5V6.6a1.5 1.5 0 0 1 3 0V12M11 11.6V4.6a1.5 1.5 0 0 1 3 0V12M14 12V5.6a1.5 1.5 0 0 1 3 0V12.4M17 12.6V8.6a1.5 1.5 0 0 1 3 0V15a6.3 6.3 0 0 1-6.3 6.3h-1.4a6.3 6.3 0 0 1-4.9-2.4L4.1 15.5a1.6 1.6 0 0 1 2.5-2L8 15.2" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="512" y="570" width="376" height="96" rx="16" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-dasharray="2 6"/>
+  <path transform="translate(531 585) scale(0.92)" d="M8 14.5V6.6a1.5 1.5 0 0 1 3 0V12M11 11.6V4.6a1.5 1.5 0 0 1 3 0V12M14 12V5.6a1.5 1.5 0 0 1 3 0V12.4M17 12.6V8.6a1.5 1.5 0 0 1 3 0V15a6.3 6.3 0 0 1-6.3 6.3h-1.4a6.3 6.3 0 0 1-4.9-2.4L4.1 15.5a1.6 1.6 0 0 1 2.5-2L8 15.2" fill="none" stroke="#5E5D59" stroke-width="2.18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="566" y="601" class="sans" font-size="16" fill="#5E5D59"><tspan x="566">Claude login: send the e-mail link</tspan><tspan x="566" dy="22">to the Spot with</tspan></text>
+  <text x="566" y="650" class="mono" font-size="17" fill="#141413" font-weight="700">./install.sh open-link</text>
+  <path d="M910 472 L931 472" fill="none" stroke="#B0AEA5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M938 472 L928 478.2 L928 465.8 Z" fill="#B0AEA5" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="944" y="262" width="408" height="420" rx="22" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <text x="968" y="306" class="serif" font-size="25" fill="#141413">Spot Second Life</text>
+  <text x="968" y="334" class="sans" font-size="16" fill="#5E5D59" font-weight="500">repeatable · works over Wi-Fi</text>
+  <path transform="translate(1301 289) scale(1.08)" d="M2.5 9.2a14 14 0 0 1 19 0M5.6 12.6a9.5 9.5 0 0 1 12.8 0M8.7 16a5 5 0 0 1 6.6 0M12 19.6h.01" fill="none" stroke="#D97757" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="960" y="362" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="994" cy="406" r="17" fill="#141413"/>
+  <text x="994" y="412.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">7</text>
+  <text x="1026" y="401" class="mono" font-size="20" fill="#141413" font-weight="700">voice</text>
+  <text x="1026" y="428" class="sans" font-size="16" fill="#5E5D59">Spot Voice, wake-word models, Vosk</text>
+  <path d="M994 448 L994 468" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="960" y="466" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="994" cy="510" r="17" fill="#141413"/>
+  <text x="994" y="516.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">8</text>
+  <text x="1026" y="505" class="mono" font-size="20" fill="#141413" font-weight="700">clock</text>
+  <text x="1026" y="532" class="sans" font-size="16" fill="#5E5D59">Spot Clock as home screen</text>
+  <path d="M994 552 L994 572" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="960" y="570" width="376" height="88" rx="16" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <circle cx="994" cy="614" r="17" fill="#141413"/>
+  <text x="994" y="620.12" class="serif" font-size="17" fill="#FAF9F5" font-weight="700" text-anchor="middle">9</text>
+  <text x="1026" y="609" class="mono" font-size="20" fill="#141413" font-weight="700">verify</text>
+  <text x="1026" y="636" class="sans" font-size="16" fill="#5E5D59">Checks everything, live wake test</text>
+  <text x="56" y="740" class="sans" font-size="17" fill="#5E5D59"><tspan class="mono" fill="#141413" font-weight="700">./install.sh voice clock</tspan><tspan dx="10">re-runs single phases</tspan></text>
+  <text x="636" y="740" class="sans" font-size="17" fill="#5E5D59"><tspan class="mono" fill="#141413" font-weight="700">./install.sh status</tspan><tspan dx="10">shows what is done</tspan></text>
+</svg>

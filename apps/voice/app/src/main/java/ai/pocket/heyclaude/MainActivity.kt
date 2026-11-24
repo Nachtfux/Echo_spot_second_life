@@ -1,6 +1,8 @@
 package ai.pocket.heyclaude
 
-import ai.pocket.heyclaude.launch.ClaudeLauncher
+import ai.pocket.heyclaude.command.CommandParser
+import ai.pocket.heyclaude.command.VoiceCommands
+import ai.pocket.heyclaude.launch.AssistantLauncher
 import ai.pocket.heyclaude.launch.VoiceModeA11yService
 import ai.pocket.heyclaude.wake.OpenWakeWordDetector
 import android.Manifest
@@ -25,6 +27,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -58,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var serviceButton: Button
     private lateinit var a11yButton: Button
     private lateinit var overlayButton: Button
+    private lateinit var launchButton: Button
     private lateinit var thresholdLabel: TextView
     private lateinit var thresholdSeek: SeekBar
     private lateinit var testButton: Button
@@ -212,6 +217,22 @@ class MainActivity : AppCompatActivity() {
         }
         col.addView(overlayButton)
 
+        // Which assistant the wake word opens, and the language of the offline voice commands.
+        col.addView(
+            choice(
+                getString(R.string.assistant_label),
+                Assistant.entries.map { it.id to it.displayName },
+                Prefs.assistant(this).id,
+            ) { pickAssistant(it) },
+        )
+        col.addView(
+            choice(
+                getString(R.string.lang_label),
+                CommandParser.LANGS.map { it to getString(if (it == "de") R.string.lang_de else R.string.lang_en) },
+                Prefs.commandLang(this),
+            ) { pickCommandLang(it) },
+        )
+
         // Threshold slider 0.2 .. 0.9 in 0.05 steps.
         thresholdLabel = label(sizeSp = 18f).apply {
             (layoutParams as LinearLayout.LayoutParams).topMargin = dp(20)
@@ -264,9 +285,10 @@ class MainActivity : AppCompatActivity() {
         test.addView(testInfo)
         col.addView(test)
 
-        col.addView(button(getString(R.string.btn_launch_test)) { launchTest() }.apply {
+        launchButton = button(getString(R.string.btn_launch_test, Prefs.assistant(this).displayName)) { launchTest() }.apply {
             (layoutParams as LinearLayout.LayoutParams).topMargin = dp(20)
-        })
+        }
+        col.addView(launchButton)
 
         scroll = ScrollView(this).apply {
             setBackgroundColor(color(R.color.dark))
@@ -274,6 +296,70 @@ class MainActivity : AppCompatActivity() {
             addView(col)
         }
         return scroll
+    }
+
+    /** A title and a row of radio buttons; [onPick] gets the value of the option the user taps. */
+    private fun choice(
+        title: String,
+        options: List<Pair<String, String>>,
+        selected: String,
+        onPick: (String) -> Unit,
+    ): View {
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(20) }
+        }
+        box.addView(label(title, 18f))
+        val group = RadioGroup(this).apply {
+            orientation = RadioGroup.HORIZONTAL
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+        }
+        for ((value, text) in options) {
+            val rb = RadioButton(this).apply {
+                id = View.generateViewId()
+                tag = value
+                this.text = text
+                setTextColor(color(R.color.ivory))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                buttonTintList = ColorStateList.valueOf(color(R.color.orange))
+                minHeight = dp(48)
+                setPadding(dp(4), 0, dp(16), 0)
+            }
+            group.addView(rb)
+            if (value == selected) group.check(rb.id)
+        }
+        group.setOnCheckedChangeListener { g, checkedId ->
+            (g.findViewById<View>(checkedId)?.tag as? String)?.let(onPick)
+        }
+        box.addView(group)
+        return box
+    }
+
+    /** Same as `am broadcast -a ai.pocket.heyclaude.SET_ASSISTANT --es assistant <id>`. */
+    private fun pickAssistant(id: String) {
+        val assistant = Assistant.fromId(id) ?: return
+        if (assistant == Prefs.assistant(this)) return
+        Prefs.setAssistant(this, assistant)
+        testModel = null
+        // A running service reloads the wake + stop models of the new assistant.
+        sendBroadcast(
+            Intent(WakeWordService.ACTION_SET_ASSISTANT).setPackage(packageName).putExtra("assistant", assistant.id),
+        )
+        refresh()
+    }
+
+    /** Same as `am broadcast -a ai.pocket.heyclaude.SET_LANG --es lang <de|en>`. */
+    private fun pickCommandLang(lang: String) {
+        if (lang == Prefs.commandLang(this)) return
+        Prefs.setCommandLang(this, lang)
+        // A running service loads the Vosk model of the new language.
+        sendBroadcast(Intent(WakeWordService.ACTION_SET_LANG).setPackage(packageName).putExtra("lang", lang))
+        refresh()
     }
 
     private fun progressToThreshold(p: Int): Float =
@@ -306,8 +392,8 @@ class MainActivity : AppCompatActivity() {
         return enabled.split(':').any { ComponentName.unflattenFromString(it.trim()) == me }
     }
 
-    private fun claudeInstalled(): Boolean = try {
-        packageManager.getPackageInfo(Prefs.claudePackage(this), 0)
+    private fun assistantInstalled(): Boolean = try {
+        packageManager.getPackageInfo(Prefs.assistantPackage(this), 0)
         true
     } catch (e: PackageManager.NameNotFoundException) {
         false
@@ -318,21 +404,25 @@ class MainActivity : AppCompatActivity() {
     private fun refresh() {
         val mic = hasMic()
         val running = WakeWordService.running
+        val assistant = Prefs.assistant(this)
         val stateText = when {
             !running -> getString(R.string.state_stopped)
             else -> when (WakeWordService.state) {
                 WakeWordService.State.LISTENING -> getString(R.string.state_listening)
-                WakeWordService.State.PAUSED -> getString(R.string.state_paused)
+                WakeWordService.State.PAUSED -> getString(R.string.state_paused, assistant.displayName)
                 WakeWordService.State.ERROR -> getString(R.string.state_error)
                 else -> getString(R.string.state_starting)
             }
         }
-        val customModel = File(getExternalFilesDir(null), Constants.CUSTOM_MODEL_FILE).isFile
+        val filesDir = getExternalFilesDir(null)
+        val customModel = File(filesDir, assistant.wakeModelFile).isFile
         val model = WakeWordService.modelName ?: testModel
-            ?: if (customModel) Constants.CUSTOM_MODEL_FILE else getString(R.string.model_unknown)
+            ?: if (customModel) assistant.wakeModelFile else getString(R.string.model_unknown)
         val a11y = a11yEnabled()
         val overlay = Settings.canDrawOverlays(this)
-        val claude = claudeInstalled()
+        val installed = assistantInstalled()
+        val voskDir = VoiceCommands.modelDir(Prefs.commandLang(this))
+        val vosk = File(File(filesDir, voskDir), "am").isDirectory
 
         val sb = StringBuilder()
         sb.append(stateText)
@@ -343,7 +433,8 @@ class MainActivity : AppCompatActivity() {
         sb.append('\n').append(getString(R.string.status_mic, yes(mic)))
         sb.append('\n').append(getString(R.string.status_a11y, yes(a11y)))
         sb.append('\n').append(getString(R.string.status_overlay, yes(overlay)))
-        sb.append('\n').append(getString(R.string.status_claude, yes(claude)))
+        sb.append('\n').append(getString(R.string.status_assistant, assistant.displayName, yes(installed)))
+        sb.append('\n').append(getString(R.string.status_commands, voskDir, yes(vosk)))
         if (running && WakeWordService.micSilenced) {
             sb.append('\n').append(getString(R.string.status_silenced))
         }
@@ -355,6 +446,7 @@ class MainActivity : AppCompatActivity() {
         overlayButton.visibility = if (overlay) View.GONE else View.VISIBLE
         serviceButton.text = getString(if (running) R.string.btn_stop else R.string.btn_start)
         serviceButton.isEnabled = mic
+        launchButton.text = getString(R.string.btn_launch_test, assistant.displayName)
 
         // Test section: own measurement while testing, otherwise mirror the service.
         val level: Float
@@ -405,8 +497,10 @@ class MainActivity : AppCompatActivity() {
             // Let the service release the mic and pause, exactly like a real trigger.
             WakeWordService.triggerNow(this)
         } else {
-            val ok = ClaudeLauncher.launch(this)
-            if (!ok) testError = getString(R.string.claude_missing, Prefs.claudePackage(this))
+            val ok = AssistantLauncher.launch(this)
+            if (!ok) {
+                testError = getString(R.string.assistant_missing, Prefs.assistant(this).displayName, Prefs.assistantPackage(this))
+            }
         }
     }
 
@@ -421,11 +515,12 @@ class MainActivity : AppCompatActivity() {
         testError = null
         testPeak = 0f
         testRunning = true
+        val wakeModelFile = Prefs.assistant(this).wakeModelFile
         testThread = Thread({
             var rec: AudioRecord? = null
             var det: OpenWakeWordDetector? = null
             try {
-                det = OpenWakeWordDetector(applicationContext)
+                det = OpenWakeWordDetector(applicationContext, wakeModelFile)
                 testModel = det.modelName
                 val rate = 16_000
                 val minBuf = AudioRecord.getMinBufferSize(

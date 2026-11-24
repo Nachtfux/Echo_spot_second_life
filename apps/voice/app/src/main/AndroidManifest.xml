@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Radio streams and the radio-browser.info station lookup. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- EchoGuard: mute the mic while Claude speaks (the Spot has no echo cancellation). -->
+    <!-- EchoGuard: mute the mic while the assistant speaks (the Spot has no echo cancellation). -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -14,9 +14,10 @@
         android:name="android.permission.SYSTEM_ALERT_WINDOW"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- Android 11 package visibility: we must be able to see/launch the Claude app. -->
+    <!-- Android 11 package visibility: we must be able to see/launch the assistant apps (see Assistant.kt). -->
     <queries>
         <package android:name="com.anthropic.claude" />
+        <package android:name="com.openai.chatgpt" />
     </queries>
 
     <application
@@ -52,6 +53,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- SET_ASSISTANT / SET_LANG while the service is stopped (adb shell am broadcast -p ai.pocket.heyclaude). -->
+        <receiver
+            android:name=".SettingsReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ai.pocket.heyclaude.SET_ASSISTANT" />
+                <action android:name="ai.pocket.heyclaude.SET_LANG" />
             </intent-filter>
         </receiver>
 

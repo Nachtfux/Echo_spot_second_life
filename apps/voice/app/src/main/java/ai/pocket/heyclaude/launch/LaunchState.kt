@@ -3,7 +3,7 @@ package ai.pocket.heyclaude.launch
 import android.os.SystemClock
 
 /**
- * Shared state between [ClaudeLauncher] (called from WakeWordService / MainActivity)
+ * Shared state between [AssistantLauncher] (called from WakeWordService / MainActivity)
  * and [VoiceModeA11yService]. All timestamps use [SystemClock.elapsedRealtime].
  */
 internal object LaunchState {
@@ -20,14 +20,14 @@ internal object LaunchState {
     var sessionActive: Boolean = false
         private set
 
-    /** Set once the Claude app has actually been seen in the foreground for this session. */
+    /** Set once the assistant app has actually been seen in the foreground for this session. */
     @Volatile
-    var claudeSeen: Boolean = false
+    var assistantSeen: Boolean = false
 
     @Synchronized
     fun onLaunch(wantTap: Boolean) {
         sessionActive = true
-        claudeSeen = false
+        assistantSeen = false
         pendingTapAt = if (wantTap) SystemClock.elapsedRealtime() else 0L
     }
 
@@ -43,7 +43,7 @@ internal object LaunchState {
     @Synchronized
     fun endSession() {
         sessionActive = false
-        claudeSeen = false
+        assistantSeen = false
         pendingTapAt = 0L
     }
 }

@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "hey-claude"
+rootProject.name = "spot-voice"
 include(":app")

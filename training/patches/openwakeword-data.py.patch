@@ -1,18 +1,16 @@
---- data.py.orig	2026-11-23 19:24:48
-+++ data.py	2026-11-23 19:24:48
-@@ -920,36 +920,30 @@
+openwakeword data.py (commit 368c037): generate_adversarial_texts() without DeepPhonemizer.
+Its model download on S3 is gone (HTTP 403), so out-of-vocabulary words get fixed ARPAbet
+pronunciations: built-in ones plus the 'pronunciations' of the word file in $OWW_WORDS_FILE.
+Applied by training/setup.sh (patch -p1 inside the openwakeword clone).
+
+--- a/openwakeword/data.py
++++ b/openwakeword/data.py
+@@ -920,36 +920,38 @@
      vowel_phones = ["AA", "AE", "AH", "AO", "AW", "AX", "AXR", "AY", "EH", "ER", "EY", "IH", "IX", "IY", "OW", "OY", "UH", "UW", "UX"]
  
      word_phones = []
 -    input_text_phones = [pronouncing.phones_for_word(i) for i in input_text.split()]
-+    # Local patch (Spot training): the DeepPhonemizer model on S3 is gone (403 AllAccessDisabled).
-+    # Out-of-vocabulary words of our phrases get fixed ARPAbet pronunciations instead, and
-+    # punctuation is stripped before the CMUdict lookup ("hey, klohd" -> "hey", "klohd").
-+    _lex = {
-+        "klohd": "K L OW1 D", "clode": "K L OW1 D", "klaude": "K L AW1 D AH0",
-+        "danke": "D AA1 NG K AH0", "stopp": "S T AA1 P",
-+    }
- 
+-
 -    # Download phonemizer model for OOV words, if needed
 -    if [] in input_text_phones:
 -        phonemizer_mdl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "en_us_cmudict_forward.pt")
@@ -27,22 +25,38 @@
 -                for chunk in r.iter_content(chunk_size=2048):
 -                    if chunk:
 -                        f.write(chunk)
-+    def _clean(w):
-+        return re.sub(r"[^a-z']", "", w.lower())
++    # Local patch (Echo Spot Second Life training/): the DeepPhonemizer model on S3 is gone
++    # (403 AllAccessDisabled), so words missing from CMUdict need fixed ARPAbet pronunciations:
++    # the built-in ones below, plus the "pronunciations" of the word file named by $OWW_WORDS_FILE
++    # (those also override CMUdict). Punctuation is stripped first ("hey, klohd" -> "hey klohd").
++    _lex = {
++        "klohd": "K L OW1 D", "clode": "K L OW1 D", "klaude": "K L AW1 D AH0",
++        "danke": "D AA1 NG K AH0", "stopp": "S T AA1 P",
++    }
++    _user_lex = {}
++    if os.environ.get("OWW_WORDS_FILE"):
++        import yaml
++        with open(os.environ["OWW_WORDS_FILE"], encoding="utf-8") as f:
++            _user_lex = {str(k).lower(): str(v) for k, v in
++                         ((yaml.safe_load(f) or {}).get("pronunciations") or {}).items()}
  
 -        # Create phonemizer object
 -        from dp.phonemizer import Phonemizer
 -        phonemizer = Phonemizer.from_checkpoint(phonemizer_mdl_path)
++    def _clean(w):
++        return re.sub(r"[^a-z']", "", w.lower())
+ 
 +    input_text = " ".join(_clean(w) for w in input_text.split() if _clean(w))
 +    input_text_phones = []
 +    for w in input_text.split():
-+        ph = pronouncing.phones_for_word(w)
++        ph = [_user_lex[w]] if w in _user_lex else pronouncing.phones_for_word(w)
 +        if not ph and w in _lex:
 +            ph = [_lex[w]]
 +        if not ph:
-+            raise ValueError(f"No pronunciation for '{w}': add it to _lex in generate_adversarial_texts")
++            raise ValueError(f"No pronunciation for '{w}': add it under 'pronunciations:' in the word file "
++                             "(ARPAbet, e.g. 'klohd: K L OW1 D')")
 +        input_text_phones.append(ph)
- 
++
      for phones, word in zip(input_text_phones, input_text.split()):
          if phones != []:
 -            word_phones.extend(phones)

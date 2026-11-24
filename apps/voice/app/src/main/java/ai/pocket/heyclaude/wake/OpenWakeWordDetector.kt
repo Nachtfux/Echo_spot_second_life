@@ -33,10 +33,10 @@ import java.io.IOException
  * | wake score | first output value, [1,1] -> `[0][0]` | model.py:314 (`prediction[0][0][0]`) |
  * | warm-up | reference: noise-filled history + first 5 predictions zeroed (utils.py:169, model.py:330-333); here: 0 until N real embeddings exist | see [FeatureBuffer] |
  *
- * Wake model lookup order (contract):
- *  1. `getExternalFilesDir(null)/hey_claude.onnx` ([Constants.CUSTOM_MODEL_FILE]; pushed via adb),
- *  2. `assets/models/hey_claude.onnx`,
- *  3. [Constants.FALLBACK_MODEL_ASSET] (`assets/models/hey_jarvis_v0.1.onnx`).
+ * Wake model lookup order (contract), for the active assistant's [ai.pocket.heyclaude.Assistant.wakeModelFile]:
+ *  1. `getExternalFilesDir(null)/hey_<id>.onnx` (e.g. `hey_claude.onnx`; pushed via adb),
+ *  2. `assets/models/hey_<id>.onnx`,
+ *  3. [Constants.FALLBACK_MODEL_ASSET] (`assets/models/alexa_v0.1.onnx`).
  * A candidate that exists but fails to load (corrupt file, wrong shape) is logged and skipped.
  *
  * Not thread-safe for concurrent [process] calls by design (one audio thread), but [process],
@@ -44,8 +44,8 @@ import java.io.IOException
  */
 class OpenWakeWordDetector(
     context: Context,
-    /** File name looked up in the external files dir, then in assets/models/. */
-    modelFile: String = Constants.CUSTOM_MODEL_FILE,
+    /** File name looked up in the external files dir, then in assets/models/ (e.g. hey_claude.onnx). */
+    modelFile: String,
     /** Asset used when no custom file exists; null = fail instead (e.g. the optional stop word). */
     fallbackAsset: String? = Constants.FALLBACK_MODEL_ASSET,
 ) : WakeWordDetector {

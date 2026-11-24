@@ -1,4 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  English (default) strings. Every key here must also exist in values-de/strings.xml;
+  build.sh warns when one is missing. Complication labels are upper case and must stay
+  short: about 13 characters fit inside a 136-unit complication.
+-->
 <resources>
-    <string name="app_name">Spot-Uhr</string>
+    <string name="app_name">Spot Clock</string>
+
+    <!-- Sun complication (top). "sun" is shown while no weather data is known. -->
+    <string name="sun">SUN</string>
+    <string name="sunrise">SUNRISE</string>
+    <string name="sunset">SUNSET</string>
+
+    <!-- Weather complication (left): state while there is no data yet. -->
+    <string name="weather_loading">LOADING …</string>
+    <string name="weather_no_location">NO LOCATION</string>
+
+    <!-- Weather descriptions for the WMO codes Open-Meteo returns. -->
+    <string name="wx_clear">CLEAR</string>
+    <string name="wx_mainly_clear">MAINLY CLEAR</string>
+    <string name="wx_partly_cloudy">PARTLY CLOUDY</string>
+    <string name="wx_overcast">OVERCAST</string>
+    <string name="wx_fog">FOG</string>
+    <string name="wx_drizzle">DRIZZLE</string>
+    <string name="wx_rain">RAIN</string>
+    <string name="wx_snow">SNOW</string>
+    <string name="wx_showers">SHOWERS</string>
+    <string name="wx_snow_showers">SNOW SHOWERS</string>
+    <string name="wx_thunderstorm">THUNDERSTORM</string>
+    <string name="wx_unknown">WEATHER</string>
+
+    <!-- Rain complication (right): label and today's maximum probability. -->
+    <string name="rain">RAIN</string>
+    <string name="rain_percent">%1$d%%</string>
+
+    <!-- Now-playing face: shown under the title while playback is paused. -->
+    <string name="now_playing_paused">PAUSED</string>
+
+    <!-- Timer / alarm: alarm time at the bottom of the face, ringing face. -->
+    <string name="alarm_at">ALARM %1$s</string>
+    <string name="ring_timer">TIMER</string>
+    <string name="ring_alarm">ALARM</string>
+    <string name="ring_tap_to_stop">Tap to stop</string>
+
+    <!-- Ringing notification. %1$s = assistant name from the STATE broadcast (default Claude). -->
+    <string name="ring_channel">Timers &amp; alarms</string>
+    <string name="ring_timer_title">Timer finished</string>
+    <string name="ring_alarm_title">Alarm</string>
+    <string name="ring_hint">Tap the clock or say “Hey %1$s, stop”</string>
+
+    <!-- Apps screen: button at the bottom that returns to the clock. -->
+    <string name="back_to_clock">Back to clock</string>
 </resources>

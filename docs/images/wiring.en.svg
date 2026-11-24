@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="wiring-title wiring-desc" xml:lang="en">
+  <title id="wiring-title">Wiring: computer, USB cable, Echo Spot and power supply</title>
+  <desc id="wiring-desc">A Mac or Linux laptop runs ./install.sh and is connected with a USB data cable to the hidden micro-USB port on the back of the Echo Spot. The Spot's DC jack stays connected to its original power supply. Use a data cable, not a charge-only cable. After setup, adb runs over Wi-Fi and the cable can be removed.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <defs>
+    <radialGradient id="wire-ball" cx="0.36" cy="0.28" r="0.8">
+      <stop offset="0" stop-color="#55534D"/>
+      <stop offset="0.42" stop-color="#262523"/>
+      <stop offset="1" stop-color="#0D0D0C"/>
+    </radialGradient>
+    <radialGradient id="wire-shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#141413" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#141413" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="1196" height="596" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="74" class="serif" font-size="34" fill="#141413">Wiring</text>
+  <text x="56" y="108" class="sans" font-size="18" fill="#5E5D59">Computer, USB cable, Spot – and its own power supply</text>
+  <rect x="84" y="196" width="292" height="180" rx="14" fill="#141413"/>
+  <rect x="96" y="208" width="268" height="156" rx="6" fill="#262624"/>
+  <text x="114" y="246" class="mono" font-size="17" fill="#FAF9F5"><tspan x="114">$ ./install.sh</tspan><tspan x="114" dy="28">✓ doctor</tspan><tspan x="114" dy="28">› unlock …</tspan></text>
+  <rect x="112" y="320" width="11" height="3" rx="1.5" fill="#D97757"/>
+  <path d="M56 374 H404 a8 8 0 0 1 -8 8 H72 a8 8 0 0 1 -8 -8 Z" fill="#E8E6DC" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="200" y="374" width="60" height="5" rx="2.5" fill="#B0AEA5"/>
+  <text x="230" y="422" class="sans" font-size="19" fill="#141413" font-weight="700" text-anchor="middle">Mac / Linux</text>
+  <text x="230" y="446" class="mono" font-size="16" fill="#5E5D59" text-anchor="middle">adb + fastboot</text>
+  <ellipse cx="862" cy="429.5" rx="129" ry="18.14" fill="url(#wire-shadow)"/>
+  <ellipse cx="862" cy="296" rx="150" ry="139.5" fill="url(#wire-ball)"/>
+  <ellipse cx="862" cy="296" rx="147" ry="136.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="2"/>
+  <path d="M745 382.49 Q862 432.71 979 382.49" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
+  <circle cx="897.29" cy="382.49" r="5.74" fill="#0A0A09" stroke="#4E4C47" stroke-width="1"/>
+  <circle cx="897.29" cy="382.49" r="2.47" fill="#000000"/>
+  <path d="M855.38 380.02 h13.24 v3.53 l-1.41 1.41 h-10.41 l-1.41 -1.41 z" fill="#C9C7BE" stroke="#8D8B84" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M856.18 380.81 h11.65 v2.36 l-0.99 0.99 h-9.67 l-0.99 -0.99 z" fill="#151514" stroke-linejoin="round"/>
+  <rect x="858.03" y="380.99" width="7.94" height="1.15" rx="0.35" fill="#8D8B84"/>
+  <circle cx="824.94" cy="382.49" r="9.71" fill="#0A0A09" stroke="#4E4C47" stroke-width="1"/>
+  <circle cx="824.94" cy="382.49" r="5.65" fill="#000000"/>
+  <circle cx="824.94" cy="382.49" r="1.76" fill="#B0AEA5"/>
+  <rect x="404" y="356" width="26" height="16" rx="3" fill="#C9C7BE" stroke="#B0AEA5" stroke-width="2"/>
+  <path d="M430 364 C500 364 470 498 550 498 H792 C852 498 862 470 862 392.49" fill="none" stroke="#8A8880" stroke-width="10" stroke-linecap="round"/>
+  <path d="M430 364 C500 364 470 498 550 498 H792 C852 498 862 470 862 392.49" fill="none" stroke="#141413" stroke-width="6" stroke-linecap="round"/>
+  <path d="M824.94 392.49 V516 Q824.94 532 840.94 532 H1000" fill="none" stroke="#8A8880" stroke-width="10" stroke-linecap="round"/>
+  <path d="M824.94 392.49 V516 Q824.94 532 840.94 532 H1000" fill="none" stroke="#5E5D59" stroke-width="6" stroke-linecap="round"/>
+  <rect x="849" y="373.49" width="26" height="22" rx="5" fill="#3E3D39" stroke="#6A6862" stroke-width="2"/>
+  <circle cx="824.94" cy="382.49" r="13" fill="#3E3D39" stroke="#6A6862" stroke-width="2"/>
+  <rect x="1000" y="493" width="104" height="78" rx="16" fill="#E8E6DC" stroke="#B0AEA5" stroke-width="2"/>
+  <path transform="translate(1037 517) scale(1.25)" d="M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21" fill="none" stroke="#5E5D59" stroke-width="1.76" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1052" y="478" class="sans" font-size="17" fill="#141413" font-weight="700" text-anchor="middle">Original power supply</text>
+  <path d="M862 371.49 L862 340 Q862 330 852 330 L700 330" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="862" cy="371.49" r="4" fill="#D97757"/>
+  <text x="690" y="326" class="sans" font-size="18" fill="#141413" font-weight="700" text-anchor="end">Hidden micro-USB port</text>
+  <text x="690" y="350" class="sans" font-size="16" fill="#5E5D59" text-anchor="end">back of the Echo Spot</text>
+  <rect x="414.5" y="478" width="391" height="42" rx="21" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <path transform="translate(429.5 488) scale(0.92)" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#D97757" stroke-width="2.84" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="460.5" y="505" class="sans" font-size="17" fill="#141413" font-weight="600">Data cable, not charge-only</text>
+  <path d="M346 184 Q560 60 730 196" fill="none" stroke="#D97757" stroke-width="2.5" stroke-dasharray="3 8" stroke-linecap="round"/>
+  <circle cx="560" cy="128" r="24" fill="#FAF9F5" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(547 116) scale(1.08)" d="M2.5 9.2a14 14 0 0 1 19 0M5.6 12.6a9.5 9.5 0 0 1 12.8 0M8.7 16a5 5 0 0 1 6.6 0M12 19.6h.01" fill="none" stroke="#D97757" stroke-width="2.21" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="560" y="196" class="sans" font-size="17" fill="#141413" font-weight="500" text-anchor="middle"><tspan x="560">After setup: adb over Wi-Fi,</tspan><tspan x="560" dy="23">the cable can go</tspan></text>
+</svg>

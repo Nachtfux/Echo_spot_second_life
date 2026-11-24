@@ -146,12 +146,14 @@ class RadioService : Service() {
 
     private fun requestFocus(): Boolean {
         val am = getSystemService(AudioManager::class.java)
-        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+        // Reuse one request for the service's lifetime: a second, new request (switching stations)
+        // would make Android send AUDIOFOCUS_LOSS to the first listener, which then paused the
+        // station that had just been started.
+        val req = focus ?: AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build())
             .setOnAudioFocusChangeListener { change ->
                 if (change == AudioManager.AUDIOFOCUS_LOSS) main.post { pause() }
-            }.build()
-        focus = req
+            }.build().also { focus = it }
         return am.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 

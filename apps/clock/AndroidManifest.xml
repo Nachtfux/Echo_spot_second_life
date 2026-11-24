@@ -21,8 +21,8 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
 
-        <!-- Opens the clock as an app; also takes the weather location:
-             am start -n ai.pocket.spotclock/.ClockActivity -\-es lat 52.52 -\-es lon 13.40 -->
+        <!-- Opens the clock as an app; also takes the weather location, e.g.:
+             am start -n ai.pocket.spotclock/.ClockActivity -\-es lat 52.52 -\-es lon 13.40 -\-es place Berlin -->
         <activity
             android:name=".ClockActivity"
             android:exported="true"
@@ -46,7 +46,7 @@
             android:excludeFromRecents="true"
             android:taskAffinity="" />
 
-        <!-- Timer / alarm control (sent by Hey Claude) and the AlarmManager callback. -->
+        <!-- Timer / alarm control (sent by Spot Voice) and the AlarmManager callback. -->
         <receiver
             android:name=".Timers"
             android:exported="true">

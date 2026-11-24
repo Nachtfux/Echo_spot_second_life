@@ -5,6 +5,16 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// Release signing: set all four ESL_* environment variables to sign with your own key
+// (same variables as apps/clock). Without them the release APK is signed with the debug key,
+// which is fine for sideloading.
+val releaseKeystore: String? = providers.environmentVariable("ESL_KEYSTORE").orNull
+val releaseKeystorePass: String? = providers.environmentVariable("ESL_KEYSTORE_PASS").orNull
+val releaseKeyAlias: String? = providers.environmentVariable("ESL_KEY_ALIAS").orNull
+val releaseKeyPass: String? = providers.environmentVariable("ESL_KEY_PASS").orNull
+val hasReleaseKey = listOf(releaseKeystore, releaseKeystorePass, releaseKeyAlias, releaseKeyPass)
+    .all { !it.isNullOrEmpty() }
+
 android {
     namespace = "ai.pocket.heyclaude"
     compileSdk = 34
@@ -14,10 +24,21 @@ android {
         minSdk = 26
         // LineageOS 18.1 on the Echo Spot is Android 11 (API 30).
         targetSdk = 30
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 10
+        versionName = "1.0.0"
         // The Echo Spot runs 32-bit ARM; leaving out the other ABIs shrinks the APK a lot.
         ndk { abiFilters += "armeabi-v7a" }
+    }
+
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = file(releaseKeystore!!)
+                storePassword = releaseKeystorePass
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPass
+            }
+        }
     }
 
     buildTypes {
@@ -27,9 +48,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // Sideload-only app: sign release with the debug key so
+            // Sideload-only app: without ESL_* variables, sign release with the debug key so
             // `assembleRelease` yields an installable APK without a keystore.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (hasReleaseKey) "release" else "debug")
         }
     }
 
@@ -69,8 +90,9 @@ dependencies {
 // ---------------------------------------------------------------------------
 // openWakeWord models (CC BY-NC-SA 4.0) are not committed. They are fetched
 // into src/main/assets/models/ before every build; files that already exist
-// are skipped. A user-trained hey_claude.onnx can be dropped next to them (or
-// pushed to the app's external files dir at runtime) — it is never downloaded.
+// are skipped. Trained wake/stop models (hey_claude.onnx, danke_claude.onnx,
+// hey_chatgpt.onnx, danke_chatgpt.onnx) can be dropped next to them, or pushed
+// to the app's external files dir at runtime — they are never downloaded.
 // ---------------------------------------------------------------------------
 val wakeWordModelBaseUrl = "https://github.com/dscripka/openWakeWord/releases/download/v0.5.1"
 val wakeWordModels = listOf(
@@ -108,7 +130,7 @@ fun downloadWithJava(url: String, target: File): Boolean {
 }
 
 val downloadWakeWordModels by tasks.registering {
-    group = "hey claude"
+    group = "spot voice"
     description = "Downloads the openWakeWord ONNX models into src/main/assets/models/."
     doLast {
         wakeWordModelDir.mkdirs()

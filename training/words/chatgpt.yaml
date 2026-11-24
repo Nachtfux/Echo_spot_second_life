@@ -1,0 +1,73 @@
+# Word set "chatgpt": the wake word and stop word used by the ChatGPT profile of Spot Voice.
+# Train with:  ./train.sh chatgpt     (format: see words/example-custom.yaml)
+#
+# "tschett dschi pi ti" is the German phonetic spelling of "ChatGPT"; those texts go to the
+# German Piper voice, the English spellings ("chat g p t", "chat gee pee tee") to the English one.
+name: chatgpt
+
+models:
+  hey_chatgpt:         # wake word -> hey_chatgpt.onnx
+    target_phrase:
+      - hey chatgpt
+      - hey chat g p t
+      - hey chat gee pee tee
+      - hey, chat g p t!
+      - hey tschett dschi pi ti
+      - hey, tschett dschi pi ti
+    custom_negative_phrases:
+      - hey chat
+      - hey chet
+      - hey jack
+      - hey check
+      - hey chatty
+      - hey cheddar
+      - chat g p t
+      - hey g p t
+      - hey dschi pi ti
+      - danke tschett dschi pi ti
+      - hey claude
+      - hey jarvis
+      - okay google
+      - hey google
+      - alexa
+      - hey siri
+      - hey
+  danke_chatgpt:       # stop word -> danke_chatgpt.onnx
+    target_phrase:
+      - danke tschett dschi pi ti
+      - danke, tschett dschi pi ti
+      - tschett dschi pi ti stopp
+      - danke chatgpt
+      - thanks chat g p t
+      - chat g p t stop
+      - chat gee pee tee, stop
+    custom_negative_phrases:
+      - danke
+      - danke schoen
+      - danke dir
+      - stopp
+      - thank you
+      - thanks
+      - stop
+      - hey tschett dschi pi ti
+      - hey chat g p t
+      - bitte tschett dschi pi ti
+      - danke tschuess
+      - danke klohd
+      - hey claude
+      - alexa
+      - hey google
+      - hey jarvis
+
+# Texts containing any of these words are spoken by the German voice (de_DE-mls-medium).
+german_words: [danke, schoen, dankeschoen, dir, klohd, stopp, hallo, tschuess,
+               klaus, claudia, nein, bitte, kloss, tschett, dschi]
+
+# ARPAbet for target-phrase words that are not in CMUdict (used to generate sound-alike
+# negatives). "pi" and "ti" are in CMUdict (as "pie" and "tee").
+pronunciations:
+  chatgpt: CH AE1 T JH IY1 P IY1 T IY1
+  tschett: CH EH1 T
+  dschi: JH IY1
+  danke: D AA1 NG K AH0
+  stopp: S T AA1 P

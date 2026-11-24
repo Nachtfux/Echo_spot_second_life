@@ -1,0 +1,65 @@
+# Template for your own word set. Copy it, edit it, then train:
+#   cp words/example-custom.yaml words/computer.yaml
+#   ./train.sh words/computer.yaml --quick     # ~20 min smoke test
+#   ./train.sh words/computer.yaml             # full training
+#
+# Spellings: lower-case ASCII only. Umlauts and digits are dropped by the pronunciation lookup,
+# so write "schoen", "tschuess", "g p t" instead of "schön", "tschüss", "GPT".
+
+# Name of the set: output goes to out/<name>/ and out/models/<name>/.
+# Optional, defaults to the file name without .yaml.
+name: computer
+
+# One entry per model; train.sh trains them in parallel (one or two models).
+# Spot Voice loads hey_<assistant>.onnx (wake word) and danke_<assistant>.onnx (stop word),
+# e.g. hey_claude.onnx / danke_claude.onnx. Use those names here, or rename the files when
+# you deploy them.
+models:
+  hey_computer:
+    # How the phrase can be written. Every spelling is spoken by many synthetic voices.
+    # Phonetic tricks help when the TTS voice pronounces a word wrongly:
+    #   "klohd"  makes the German voice say "Claude" the way German speakers say it,
+    #   "chat g p t" / "chat gee pee tee" make the English voice spell the letters,
+    #   punctuation ("hey, computer!") changes the rhythm and intonation.
+    target_phrase:
+      - hey computer
+      - hey, computer
+      - hey computer!
+      - hey kompjuter        # German voice (see german_words below)
+    # Phrases the model must NOT react to: similar sounding words, the parts of your phrase on
+    # their own, and other assistants' wake words. Sound-alike negatives are added on top
+    # automatically (from the pronunciations of the target phrase).
+    custom_negative_phrases:
+      - hey
+      - computer
+      - hey commuter
+      - hey compute
+      - hey peter
+      - okay google
+      - alexa
+      - hey siri
+  danke_computer:
+    target_phrase:
+      - danke kompjuter
+      - danke, kompjuter
+      - computer stop
+      - thank you computer
+    custom_negative_phrases:
+      - danke
+      - danke schoen
+      - stopp
+      - thank you
+      - stop
+      - hey computer
+
+# A text that contains any of these words is spoken by the German voice (de_DE-mls-medium,
+# 236 speakers); all other texts by the English voice (en_US-libritts_r-medium, 904 speakers).
+# Leave it out to use the built-in list (the one in words/claude.yaml).
+german_words: [danke, schoen, dir, stopp, hallo, tschuess, nein, bitte, kompjuter]
+
+# ARPAbet pronunciations (CMUdict symbols, https://en.wikipedia.org/wiki/ARPABET) for words of
+# your target phrases. Required for every word that is not in CMUdict, otherwise training
+# stops with "No pronunciation for '<word>'". Entries here also override CMUdict.
+pronunciations:
+  kompjuter: K AH0 M P Y UW1 T ER0
+  danke: D AA1 NG K AH0

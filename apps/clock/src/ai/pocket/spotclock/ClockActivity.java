@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.WindowManager;
 
 /**
- * The clock as an app (tap to close). Also the place to set the weather location:
- *   adb shell am start -n ai.pocket.spotclock/.ClockActivity --es lat 49.17 --es lon 9.27 --es place Erlenbach
+ * The clock as an app (tap to close). Also the place to set the weather location, e.g.:
+ *   adb shell am start -n ai.pocket.spotclock/.ClockActivity --es lat 52.52 --es lon 13.40 --es place Berlin
  */
 public class ClockActivity extends Activity {
     @Override
@@ -55,7 +55,7 @@ public class ClockActivity extends Activity {
         return i != null && i.hasCategory(Intent.CATEGORY_HOME);
     }
 
-    /** Opens our own app screen (AppsActivity); its "Uhr" button or Home brings the clock back. */
+    /** Opens our own app screen (AppsActivity); its "Back to clock" button or Home brings the clock back. */
     private void openApps() {
         startActivity(new Intent(this, AppsActivity.class));
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

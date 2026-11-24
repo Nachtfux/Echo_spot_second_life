@@ -31,13 +31,15 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Full-screen analogue face for the round 480x480 Spot display, drawn in a
  * 480-unit coordinate space centred on the screen. Four complications (sun,
- * weather, rain, date + moon), Claude status in the centre cap, and a dimmed
- * night face from 22:00 to 07:00. Layout follows the "Vollbild mit
- * Komplikationen" design board.
+ * weather, rain, date + moon), the voice assistant's state in the centre cap,
+ * and a dimmed night face (room light, or 22:00 to 07:00 without a light
+ * sensor). Layout follows the "full screen with complications" design board.
+ * Texts come from res/values*; weekday and month names follow the system locale.
  */
 public class ClockView extends View {
     static final int IVORY = 0xFFFAF9F5;
@@ -45,11 +47,19 @@ public class ClockView extends View {
     static final int ACCENT = 0xFFD97757;
     static final int GRAY = 0xFFB0AEA5;
 
-    /** Sent by Hey Claude: extra "state" = off | listening | active. */
+    /**
+     * Sent by Spot Voice: extra "state" = off | listening | active, optional extra
+     * "assistant" = display name of the selected assistant ("Claude", "ChatGPT").
+     */
     static final String ACTION_STATE = "ai.pocket.heyclaude.STATE";
-    /** Sent by the clock on start so Hey Claude can answer with its state. */
+    /** Sent by the clock on start so Spot Voice can answer with its state. */
     static final String ACTION_QUERY = "ai.pocket.heyclaude.QUERY_STATE";
     private static final String HEY_CLAUDE_PKG = "ai.pocket.heyclaude";
+    /** Assistant name used until Spot Voice has sent one. */
+    static final String DEFAULT_ASSISTANT = "Claude";
+    private static final String PREF_ASSISTANT = "assistant";
+    /** Calm placeholder for values that are not known (yet), e.g. weather without a location. */
+    private static final String NONE = "—";
 
     /** Brightness follows the room light: [night] = dark face, [brightness] 0..1 or -1 = system setting. */
     interface NightListener {
@@ -70,16 +80,19 @@ public class ClockView extends View {
     private final Typeface serif = Typeface.create(Typeface.SERIF, Typeface.NORMAL);
     private final Typeface sans = Typeface.create("sans-serif", Typeface.NORMAL);
     private final Typeface sansMedium = Typeface.create("sans-serif-medium", Typeface.NORMAL);
-    private final SimpleDateFormat hhmm = new SimpleDateFormat("HH:mm", Locale.GERMAN);
-    private final SimpleDateFormat weekdayFmt = new SimpleDateFormat("EE", Locale.GERMAN);
-    private final SimpleDateFormat monthFmt = new SimpleDateFormat("MMM", Locale.GERMAN);
+    // Recreated by ensureFormats() when the system locale or time zone changes.
+    private Locale fmtLocale;
+    private TimeZone fmtZone;
+    private SimpleDateFormat hhmm;
+    private SimpleDateFormat weekdayFmt;
+    private SimpleDateFormat monthFmt;
     private final SparseArray<Drawable> icons = new SparseArray<>();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final RectF rect = new RectF();
     private final RectF rect2 = new RectF();
     private final Path path = new Path();
 
-    private String claudeState = "off";
+    private String assistantState = "off";
     private boolean night;
     private NightListener nightListener;
     private SensorManager sensors;
@@ -115,9 +128,10 @@ public class ClockView extends View {
     private final BroadcastReceiver stateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            saveAssistantName(context, intent.getStringExtra("assistant"));
             String s = intent.getStringExtra("state");
             if (s == null) return;
-            claudeState = s;
+            assistantState = s;
             handler.removeCallbacks(tick);
             invalidate();
             schedule();
@@ -129,6 +143,35 @@ public class ClockView extends View {
         stroke.setStyle(Paint.Style.STROKE);
         fill.setStyle(Paint.Style.FILL);
         text.setTextAlign(Paint.Align.CENTER);
+        ensureFormats();
+    }
+
+    /** Display name of the selected assistant (last "assistant" extra of the STATE broadcast). */
+    static String assistantName(Context c) {
+        return Weather.prefs(c).getString(PREF_ASSISTANT, DEFAULT_ASSISTANT);
+    }
+
+    private static void saveAssistantName(Context c, String name) {
+        if (name == null) return;
+        name = name.trim();
+        if (name.isEmpty() || name.length() > 24) return;   // broadcast input: keep it sane
+        if (!name.equals(assistantName(c))) Weather.prefs(c).edit().putString(PREF_ASSISTANT, name).apply();
+    }
+
+    /** Date formats follow Locale.getDefault(); rebuilt only when locale or time zone change. */
+    private void ensureFormats() {
+        Locale l = Locale.getDefault();
+        TimeZone tz = TimeZone.getDefault();
+        if (l.equals(fmtLocale) && tz.equals(fmtZone)) return;
+        fmtLocale = l;
+        fmtZone = tz;
+        hhmm = new SimpleDateFormat("HH:mm", l);
+        weekdayFmt = new SimpleDateFormat("EE", l);
+        monthFmt = new SimpleDateFormat("MMM", l);
+    }
+
+    private String str(int resId) {
+        return getContext().getString(resId);
     }
 
     void setNightListener(NightListener l) {
@@ -167,7 +210,7 @@ public class ClockView extends View {
     private void schedule() {
         long now = System.currentTimeMillis();
         long delay;
-        if (RingService.ringing != null || "active".equals(claudeState)) delay = 33;   // pulse animation
+        if (RingService.ringing != null || "active".equals(assistantState)) delay = 33;   // pulse animation
         else if (night) delay = 30000 - (now % 30000);                // no second hand at night
         else delay = 1000 - (now % 1000);                             // tick on the second
         handler.postDelayed(tick, delay);
@@ -185,6 +228,7 @@ public class ClockView extends View {
     @Override
     protected void onDraw(Canvas c) {
         long now = System.currentTimeMillis();
+        ensureFormats();
         Calendar cal = Calendar.getInstance();
         int hour = cal.get(Calendar.HOUR_OF_DAY);
         updateLightBucket(now);
@@ -262,19 +306,19 @@ public class ClockView extends View {
     private void drawSun(Canvas c, float cx, float cy, Weather.Data w, long now) {
         complication(c, cx, cy);
         icon(c, R.drawable.ic_sun_horizon, cx, cy - 26f, 32f);
-        String value = "—";
-        String label = "SONNE";
+        String value = NONE;
+        String label = str(R.string.sun);
         if (w != null) {
             long t;
             if (now < w.sunrise) {
                 t = w.sunrise;
-                label = "AUFGANG";
+                label = str(R.string.sunrise);
             } else if (now < w.sunset) {
                 t = w.sunset;
-                label = "UNTERGANG";
+                label = str(R.string.sunset);
             } else {
                 t = w.sunriseTomorrow;
-                label = "AUFGANG";
+                label = str(R.string.sunrise);
             }
             if (t > 0) value = hhmm.format(new Date(t));
         }
@@ -284,7 +328,7 @@ public class ClockView extends View {
 
     private void drawWeather(Canvas c, float cx, float cy, Weather.Data w) {
         complication(c, cx, cy);
-        String temp = w == null ? "—" : Math.round(w.temp) + "°";
+        String temp = w == null ? NONE : Math.round(w.temp) + "°";
         text.setTypeface(serif);
         text.setTextSize(36f);
         text.setLetterSpacing(0f);
@@ -298,8 +342,8 @@ public class ClockView extends View {
 
         String hilo = w == null ? "" : "↑" + Math.round(w.hi) + "°  ↓" + Math.round(w.lo) + "°";
         label(c, hilo, cx, cy + 17f, 13f, sans, alpha(IVORY, 0.78f), 0f);
-        String cond = w != null ? Weather.label(w.code)
-                : Weather.hasLocation(getContext()) ? "LÄDT …" : "ORT FEHLT";
+        String cond = str(w != null ? Weather.label(w.code)
+                : Weather.hasLocation(getContext()) ? R.string.weather_loading : R.string.weather_no_location);
         label(c, cond, cx, cy + 35f, 10.5f, sansMedium, alpha(IVORY, 0.62f), 1.8f);
     }
 
@@ -316,15 +360,15 @@ public class ClockView extends View {
         }
         stroke.setStrokeWidth(1f);
         icon(c, R.drawable.ic_drop, cx, cy - 24f, 20f);
-        label(c, w == null ? "—" : rain + " %", cx, cy + 9f, 24f, sansMedium, IVORY, 0f);
-        label(c, "REGEN", cx, cy + 29f, 10.5f, sansMedium, alpha(IVORY, 0.62f), 1.8f);
+        label(c, w == null ? NONE : getContext().getString(R.string.rain_percent, rain), cx, cy + 9f, 24f, sansMedium, IVORY, 0f);
+        label(c, str(R.string.rain), cx, cy + 29f, 10.5f, sansMedium, alpha(IVORY, 0.62f), 1.8f);
     }
 
     private void drawDate(Canvas c, float cx, float cy, Calendar cal, long now) {
         complication(c, cx, cy);
         Date d = cal.getTime();
-        String wd = weekdayFmt.format(d).replace(".", "").toUpperCase(Locale.GERMAN);
-        String mo = monthFmt.format(d).replace(".", "").toUpperCase(Locale.GERMAN);
+        String wd = weekdayFmt.format(d).replace(".", "").toUpperCase(fmtLocale);
+        String mo = monthFmt.format(d).replace(".", "").toUpperCase(fmtLocale);
         label(c, wd, cx, cy - 26f, 12f, sansMedium, ACCENT, 2f);
         label(c, String.valueOf(cal.get(Calendar.DAY_OF_MONTH)), cx, cy + 16f, 44f, serif, IVORY, 0f);
 
@@ -376,11 +420,11 @@ public class ClockView extends View {
         c.restore();
     }
 
-    /** Centre cap = Claude status: gray off, orange listening (halo), pulsing while active. */
+    /** Centre cap = assistant status: gray off, orange listening (halo), pulsing while active. */
     private void drawCenter(Canvas c) {
         float r = 9f;
         int color;
-        if ("active".equals(claudeState)) {
+        if ("active".equals(assistantState)) {
             long t = SystemClock.uptimeMillis();
             for (int i = 0; i < 2; i++) {
                 float f = ((t + i * 700) % 1400) / 1400f;
@@ -389,7 +433,7 @@ public class ClockView extends View {
                 c.drawCircle(0f, 0f, r + 4f + f * 26f, stroke);
             }
             color = ACCENT;
-        } else if ("listening".equals(claudeState)) {
+        } else if ("listening".equals(assistantState)) {
             stroke.setStrokeWidth(2f);
             stroke.setColor(alpha(ACCENT, 0.45f));
             c.drawCircle(0f, 0f, r + 7f, stroke);
@@ -479,9 +523,9 @@ public class ClockView extends View {
         label(c, fit(title, 350f, serif, 30f, 0f), 0f, 104f, 30f, serif, IVORY, 0f);
         String artist = NowPlaying.artist;
         if (artist != null && !artist.isEmpty()) {
-            label(c, fit(artist.toUpperCase(Locale.GERMAN), 320f, sansMedium, 14f, 1.6f), 0f, 136f, 14f, sansMedium, alpha(IVORY, 0.78f), 1.6f);
+            label(c, fit(artist.toUpperCase(fmtLocale), 320f, sansMedium, 14f, 1.6f), 0f, 136f, 14f, sansMedium, alpha(IVORY, 0.78f), 1.6f);
         }
-        if (!NowPlaying.playing) label(c, "PAUSE", 0f, 176f, 12f, sansMedium, alpha(IVORY, 0.6f), 2f);
+        if (!NowPlaying.playing) label(c, str(R.string.now_playing_paused), 0f, 176f, 12f, sansMedium, alpha(IVORY, 0.6f), 2f);
     }
 
     private String fit(String s, float maxWidth, android.graphics.Typeface tf, float size, float spacingPx) {
@@ -516,8 +560,8 @@ public class ClockView extends View {
             stroke.setStrokeWidth(1f);
             long sec = Math.max(0L, (left + 999) / 1000);
             String t = sec >= 3600
-                    ? String.format(Locale.GERMAN, "%d:%02d:%02d", sec / 3600, (sec / 60) % 60, sec % 60)
-                    : String.format(Locale.GERMAN, "%d:%02d", sec / 60, sec % 60);
+                    ? String.format(Locale.ROOT, "%d:%02d:%02d", sec / 3600, (sec / 60) % 60, sec % 60)
+                    : String.format(Locale.ROOT, "%d:%02d", sec / 60, sec % 60);
             fill.setColor(night ? Color.BLACK : DARK);
             rect.set(-46f, -212f, 46f, -184f);
             c.drawRoundRect(rect, 14f, 14f, fill);
@@ -525,11 +569,11 @@ public class ClockView extends View {
         }
         long at = Timers.alarmAt(ctx);
         if (at > 0) {
-            label(c, "WECKER " + hhmm.format(new Date(at)), 0f, 203f, 12f, sansMedium, alpha(ACCENT, night ? 0.6f : 0.95f), 1.6f);
+            label(c, getContext().getString(R.string.alarm_at, hhmm.format(new Date(at))), 0f, 203f, 12f, sansMedium, alpha(ACCENT, night ? 0.6f : 0.95f), 1.6f);
         }
     }
 
-    /** Timer/alarm is ringing: pulsing rings, tap anywhere (or "Hey Claude, stopp") to stop. */
+    /** Timer/alarm is ringing: pulsing rings, tap anywhere (or "Hey Claude, stop") to stop. */
     private void drawRinging(Canvas c, Calendar cal) {
         long t = SystemClock.uptimeMillis();
         for (int i = 0; i < 3; i++) {
@@ -542,9 +586,9 @@ public class ClockView extends View {
         fill.setColor(ACCENT);
         c.drawCircle(0f, 0f, 78f, fill);
         boolean timer = "timer".equals(RingService.ringing);
-        label(c, timer ? "TIMER" : "WECKER", 0f, 9f, 24f, sansMedium, DARK, 2f);
+        label(c, str(timer ? R.string.ring_timer : R.string.ring_alarm), 0f, 9f, 24f, sansMedium, DARK, 2f);
         label(c, hhmm.format(cal.getTime()), 0f, -150f, 26f, sansMedium, IVORY, 0f);
-        label(c, "Tippen zum Beenden", 0f, 160f, 15f, sans, alpha(IVORY, 0.75f), 0.5f);
+        label(c, str(R.string.ring_tap_to_stop), 0f, 160f, 15f, sans, alpha(IVORY, 0.75f), 0.5f);
     }
 
     // ---------------------------------------------------------------- night --
@@ -566,7 +610,7 @@ public class ClockView extends View {
         hand(c, m * 6f, 6f, 210f, 16f, dim, false);
         fill.setColor(Color.BLACK);
         c.drawCircle(0f, 0f, 10f, fill);
-        boolean on = "listening".equals(claudeState) || "active".equals(claudeState);
+        boolean on = "listening".equals(assistantState) || "active".equals(assistantState);
         fill.setColor(on ? dim : alpha(GRAY, 0.45f));
         c.drawCircle(0f, 0f, 7f, fill);
     }

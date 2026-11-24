@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="spot-back-port-title spot-back-port-desc" xml:lang="en">
+  <title id="spot-back-port-title">Back of the Echo Spot: the hidden micro-USB port</title>
+  <desc id="spot-back-port-desc">Rear view of an Echo Spot. Near the bottom are a 3.5 mm audio jack, a small glued rubber cover and the round DC power jack (seen from behind: power left, audio right). A magnified view shows the cover peeled back, revealing a micro-USB port between the audio jack and the power jack. Keep the original power supply connected; use a thin plastic tool, no metal, to lift the cover.</desc>
+  <style>
+    .sans { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .serif { font-family: Georgia, 'Times New Roman', serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+  </style>
+  <defs>
+    <radialGradient id="back-ball" cx="0.36" cy="0.28" r="0.8">
+      <stop offset="0" stop-color="#55534D"/>
+      <stop offset="0.42" stop-color="#262523"/>
+      <stop offset="1" stop-color="#0D0D0C"/>
+    </radialGradient>
+    <radialGradient id="back-shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#141413" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#141413" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="bp-zoom"><circle cx="742" cy="392" r="212"/></clipPath>
+    <radialGradient id="bp-zoombg" cx="0.4" cy="0.25" r="0.9">
+      <stop offset="0" stop-color="#3A3935"/>
+      <stop offset="1" stop-color="#121211"/>
+    </radialGradient>
+    <pattern id="bp-glue" width="7" height="7" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#6A6862"/>
+      <circle cx="5.5" cy="5.5" r="0.9" fill="#5A5853"/>
+    </pattern>
+  </defs>
+  <rect x="2" y="2" width="1196" height="696" rx="28" fill="#FAF9F5" stroke="#DEDBD0" stroke-width="2"/>
+  <text x="56" y="78" class="serif" font-size="34" fill="#141413">The back of the Echo Spot</text>
+  <text x="56" y="112" class="sans" font-size="18" fill="#5E5D59">A micro-USB port is hidden between the two jacks.</text>
+  <ellipse cx="250" cy="562.1" rx="146.2" ry="20.55" fill="url(#back-shadow)"/>
+  <ellipse cx="250" cy="410" rx="170" ry="158.1" fill="url(#back-ball)"/>
+  <ellipse cx="250" cy="410" rx="167" ry="155.1" fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="2"/>
+  <path d="M117.4 508.02 Q250 564.94 382.6 508.02" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
+  <circle cx="290" cy="508.02" r="6.5" fill="#0A0A09" stroke="#4E4C47" stroke-width="1"/>
+  <circle cx="290" cy="508.02" r="2.8" fill="#000000"/>
+  <rect x="237" y="502.02" width="26" height="12" rx="3" fill="#2A2927" stroke="#45433F" stroke-width="1"/>
+  <circle cx="208" cy="508.02" r="11" fill="#0A0A09" stroke="#4E4C47" stroke-width="1"/>
+  <circle cx="208" cy="508.02" r="6.4" fill="#000000"/>
+  <circle cx="208" cy="508.02" r="2" fill="#B0AEA5"/>
+  <path d="M245.48 565.85 L725.48 603.36" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 7"/>
+  <path d="M220.12 458.31 L632.79 210.29" fill="none" stroke="#B0AEA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 7"/>
+  <circle cx="250" cy="508.02" r="58" fill="none" stroke="#D97757" stroke-width="2.5"/>
+  <circle cx="742" cy="392" r="219" fill="#FFFFFF" stroke="#DEDBD0" stroke-width="2"/>
+  <g clip-path="url(#bp-zoom)">
+  <circle cx="742" cy="392" r="212" fill="url(#bp-zoombg)"/>
+  <path d="M482 512 Q742 642 1002 512" fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="3"/>
+  <circle cx="886" cy="426" r="23.4" fill="#0A0A09" stroke="#4E4C47" stroke-width="1.8"/>
+  <circle cx="886" cy="426" r="10.08" fill="#000000"/>
+  <circle cx="590.8" cy="426" r="39.6" fill="#0A0A09" stroke="#4E4C47" stroke-width="1.8"/>
+  <circle cx="590.8" cy="426" r="23.04" fill="#000000"/>
+  <circle cx="590.8" cy="426" r="7.2" fill="#B0AEA5"/>
+  <rect x="691.6" y="401.52" width="100.8" height="48.96" rx="11.52" fill="#0E0E0D" stroke="#3D3C38" stroke-width="2"/>
+  <path d="M715 415.92 h54 v14.4 l-5.76 5.76 h-42.48 l-5.76 -5.76 z" fill="#C9C7BE" stroke="#8D8B84" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M718.24 419.16 h47.52 v9.65 l-4.03 4.03 h-39.46 l-4.03 -4.03 z" fill="#151514" stroke-linejoin="round"/>
+  <rect x="725.8" y="419.88" width="32.4" height="4.68" rx="1.44" fill="#8D8B84"/>
+  <path d="M774.4 369.12 L800.29 361.25 L971.38 250.14 L963.21 237.56 L792.12 348.67 Z" fill="#E8E6DC" stroke="#B0AEA5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M695.2 399.52 L788.8 399.52 Q796 372.72 792.4 347.52 L706 340.32 Q691.6 365.52 695.2 399.52 Z" transform="translate(0 6)" fill="#0E0E0D"/>
+  <path d="M695.2 399.52 L788.8 399.52 Q796 372.72 792.4 347.52 L706 340.32 Q691.6 365.52 695.2 399.52 Z" fill="#3E3D39" stroke="#5C5A55" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M695.2 399.52 L788.8 399.52 Q796 372.72 792.4 347.52 L706 340.32 Q691.6 365.52 695.2 399.52 Z" fill="url(#bp-glue)" opacity="0.55"/>
+  </g>
+  <circle cx="742" cy="392" r="212" fill="none" stroke="#D97757" stroke-width="2.5"/>
+  <text x="738" y="324.32" class="sans" font-size="16" fill="#FAF9F5" font-weight="500" text-anchor="middle" fill-opacity="0.75">cover, peeled back</text>
+  <path d="M590.8 387.6 L590.8 222 Q590.8 212 580.8 212 L562.8 212" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="590.8" cy="387.6" r="4" fill="#D97757"/>
+  <text x="550.8" y="207" class="sans" font-size="20" fill="#141413" font-weight="700" text-anchor="end">Power</text>
+  <text x="550.8" y="233" class="sans" font-size="17" fill="#5E5D59" text-anchor="end"><tspan x="550.8">keep the original</tspan><tspan x="550.8" dy="23">PSU connected</tspan></text>
+  <path d="M909.4 402.6 L947.11 277.57 Q950 268 960 268 L980 268" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="909.4" cy="402.6" r="4" fill="#D97757"/>
+  <text x="992" y="262" class="sans" font-size="20" fill="#141413" font-weight="700">Audio out</text>
+  <text x="992" y="290" class="sans" font-size="17" fill="#5E5D59">3.5 mm jack</text>
+  <path d="M742 458.48 L742 628" fill="none" stroke="#D97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="742" cy="458.48" r="4" fill="#D97757"/>
+  <text x="756" y="640" class="sans" font-size="20" fill="#141413" font-weight="700">Hidden micro-USB</text>
+  <text x="756" y="666" class="sans" font-size="17" fill="#5E5D59">under a glued rubber cover</text>
+  <rect x="56" y="618" width="432" height="48" rx="24" fill="#FBEFE9" stroke="#F5DED3" stroke-width="2"/>
+  <path transform="translate(74 630) scale(1)" d="M12 4.2L21.2 19.6H2.8zM12 10v4.2M12 17h.01" fill="none" stroke="#D97757" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="110" y="648" class="sans" font-size="17" fill="#141413" font-weight="600">Use a thin plastic tool, no metal</text>
+</svg>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_description">Spot Voice nutzt diese Bedienungshilfe nur in der Claude- bzw. ChatGPT-App: Nach dem Wake-Word tippt sie den Sprachmodus-Button an, schaltet das Mikrofon des Assistenten stumm, solange er spricht (der Echo Spot hat keine Echo-Unterdrückung), liest das Transkript auf dem Bildschirm, um eine Verabschiedung wie „Danke Claude“ zu erkennen, drückt „Beenden“, wenn das Gespräch vorbei ist, und erkennt, wann du die App verlässt (dann hört Spot Voice wieder zu). Es werden keine Inhalte übertragen, in anderen Apps wird nichts angetippt; zur Fehlersuche landen nur Bildschirm-Beschriftungen im lokalen Systemlog (logcat).</string>
+</resources>

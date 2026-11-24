@@ -4,7 +4,9 @@ openWakeWord's train.py imports `generate_samples` from the directory given as
 piper_sample_generator_path and calls it without a model argument (old dscripka fork API).
 This shim
   * routes German-looking texts ("danke", "klohd", "stopp", ...) to the German multi-speaker
-    generator (de_DE-mls, 236 speakers) and everything else to English LibriTTS-R (904 speakers),
+    generator (de_DE-mls, 236 speakers) and everything else to English LibriTTS-R (904 speakers);
+    a text is German if it contains a word of the "german_words" list of the word file named by
+    $OWW_WORDS_FILE (set by train.sh), or of the built-in list below,
   * splits max_samples between the two in proportion to the number of texts,
   * always writes unique file names (Piper numbers files from 0 otherwise -> overwrites),
   * resamples the 22.05 kHz output to the 16 kHz openWakeWord expects.
@@ -25,10 +27,17 @@ from piper_sample_generator.__main__ import generate_samples as _generate  # noq
 
 MODEL_EN = os.path.join(PSG, "models", "en_US-libritts_r-medium.pt")
 MODEL_DE = os.path.join(PSG, "models", "de_DE-mls-medium.pt")
+# Default list; replaced by the "german_words" of the word file in $OWW_WORDS_FILE, if it has one.
 GERMAN_WORDS = {
     "danke", "schoen", "dankeschoen", "dir", "klohd", "stopp", "hallo", "tschuess",
     "klaus", "claudia", "nein", "bitte", "kloss", "tschett", "dschi",
 }
+if os.environ.get("OWW_WORDS_FILE"):
+    import yaml
+    with open(os.environ["OWW_WORDS_FILE"], encoding="utf-8") as _f:
+        _words = (yaml.safe_load(_f) or {}).get("german_words")
+    if _words:
+        GERMAN_WORDS = {str(w).lower() for w in _words}
 PASS_THROUGH = ("slerp_weights", "length_scales", "noise_scales", "noise_scale_ws", "max_speakers")
 MAX_BATCH = 32   # keeps Apple-GPU (MPS) memory in check
 
