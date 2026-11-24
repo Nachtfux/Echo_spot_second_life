@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ai.pocket.spotclock">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Android 11 package visibility: the app screen lists all launchable apps. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+
+        <!-- Opens the clock as an app; also takes the weather location:
+             am start -n ai.pocket.spotclock/.ClockActivity -\-es lat 52.52 -\-es lon 13.40 -->
+        <activity
+            android:name=".ClockActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Can be the home screen: the Spot then always shows the clock, a tap opens the apps. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- App screen in the clock's look (tap on the clock). -->
+        <activity
+            android:name=".AppsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity="" />
+
+        <!-- Timer / alarm control (sent by Hey Claude) and the AlarmManager callback. -->
+        <receiver
+            android:name=".Timers"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ai.pocket.spotclock.TIMER" />
+                <action android:name="ai.pocket.spotclock.ALARM" />
+                <action android:name="ai.pocket.spotclock.STOP_RINGING" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".RingService"
+            android:exported="false" />
+
+        <!-- Reads media sessions (cover, title, artist) for the "now playing" face. -->
+        <service
+            android:name=".NowPlayingService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- The screensaver ("Daydream") shown whenever the Spot is idle on power. -->
+        <service
+            android:name=".ClockDream"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

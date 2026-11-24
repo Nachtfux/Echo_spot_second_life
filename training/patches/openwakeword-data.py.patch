@@ -1,0 +1,58 @@
+--- data.py.orig	2026-11-23 19:24:48
++++ data.py	2026-11-23 19:24:48
+@@ -920,36 +920,30 @@
+     vowel_phones = ["AA", "AE", "AH", "AO", "AW", "AX", "AXR", "AY", "EH", "ER", "EY", "IH", "IX", "IY", "OW", "OY", "UH", "UW", "UX"]
+ 
+     word_phones = []
+-    input_text_phones = [pronouncing.phones_for_word(i) for i in input_text.split()]
++    # Local patch (Spot training): the DeepPhonemizer model on S3 is gone (403 AllAccessDisabled).
++    # Out-of-vocabulary words of our phrases get fixed ARPAbet pronunciations instead, and
++    # punctuation is stripped before the CMUdict lookup ("hey, klohd" -> "hey", "klohd").
++    _lex = {
++        "klohd": "K L OW1 D", "clode": "K L OW1 D", "klaude": "K L AW1 D AH0",
++        "danke": "D AA1 NG K AH0", "stopp": "S T AA1 P",
++    }
+ 
+-    # Download phonemizer model for OOV words, if needed
+-    if [] in input_text_phones:
+-        phonemizer_mdl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "en_us_cmudict_forward.pt")
+-        if not os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")):
+-            os.mkdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources"))
+-        if not os.path.exists(phonemizer_mdl_path):
+-            logging.warning("Downloading phonemizer model from DeepPhonemizer library...")
+-            import requests
+-            file_url = "https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/DeepPhonemizer/en_us_cmudict_forward.pt"
+-            r = requests.get(file_url, stream=True)
+-            with open(phonemizer_mdl_path, "wb") as f:
+-                for chunk in r.iter_content(chunk_size=2048):
+-                    if chunk:
+-                        f.write(chunk)
++    def _clean(w):
++        return re.sub(r"[^a-z']", "", w.lower())
+ 
+-        # Create phonemizer object
+-        from dp.phonemizer import Phonemizer
+-        phonemizer = Phonemizer.from_checkpoint(phonemizer_mdl_path)
++    input_text = " ".join(_clean(w) for w in input_text.split() if _clean(w))
++    input_text_phones = []
++    for w in input_text.split():
++        ph = pronouncing.phones_for_word(w)
++        if not ph and w in _lex:
++            ph = [_lex[w]]
++        if not ph:
++            raise ValueError(f"No pronunciation for '{w}': add it to _lex in generate_adversarial_texts")
++        input_text_phones.append(ph)
+ 
+     for phones, word in zip(input_text_phones, input_text.split()):
+         if phones != []:
+-            word_phones.extend(phones)
+-        elif phones == []:
+-            logging.warning(f"The word '{word}' was not found in the pronunciation dictionary! "
+-                            "Using the DeepPhonemizer library to predict the phonemes.")
+-            phones = phonemizer(word, lang='en_us')
+-            logging.warning(f"Phones for '{word}': {phones}")
+-            word_phones.append(re.sub(r"[\]|\[]", "", re.sub(r"\]\[", " ", phones)))
++            word_phones.append(phones[0])
+         elif isinstance(phones[0], list):
+             logging.warning(f"There are multiple pronunciations for the word '{word}'.")
+             word_phones.append(phones[0])
