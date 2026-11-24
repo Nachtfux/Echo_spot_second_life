@@ -4,9 +4,9 @@
 
 > **Ziel:** ein Wake-Word und ein Stoppwort auf deinem Computer trainieren, messen, wie gut sie funktionieren, und sie auf den Spot bringen · **Zeit:** 1,5–2,5 h Rechenzeit für einen vollen Lauf (30–45 min für einen Schnelltest), davon etwa 15 min für dich · **Installer:** `./install.sh train <set>`
 
-Im Repository liegen schon fertig trainierte Modelle für „Hey Claude“ und „Danke Claude“ in `models/`.
-Für den normalen Betrieb brauchst du dieses Kapitel also **nicht**. Es ist für dich, wenn du ein anderes Wort
-willst, wenn du ChatGPT nutzt und dessen Modelle brauchst, oder wenn das Wake-Word bei dir zu Hause nicht gut passt.
+Im Repository liegen schon fertig trainierte Modelle für „Hey Claude“, „Danke Claude“, „Hey ChatGPT“ und
+„Danke ChatGPT“ in `models/`. Für den normalen Betrieb brauchst du dieses Kapitel also **nicht**. Es ist für dich,
+wenn du ein anderes Wort willst oder wenn das Wake-Word bei dir zu Hause nicht gut passt.
 
 Alles in diesem Kapitel läuft auf deinem Computer. Den Spot brauchst du erst ganz am Ende, um das Ergebnis aufzuspielen.
 
@@ -16,7 +16,7 @@ Alles in diesem Kapitel läuft auf deinem Computer. Den Spot brauchst du erst ga
 
 | Situation | Was dir das Training bringt |
 |---|---|
-| Du nutzt ChatGPT, und in `models/` gibt es noch kein `hey_chatgpt.onnx` | Ohne diese Datei hört Spot Voice auf sein eingebautes Ersatzwort **„Alexa“**. `./install.sh train chatgpt` trainiert „Hey ChatGPT“ und „Danke ChatGPT“ aus der Wortdatei im Repository. |
+| Du hast `models/hey_chatgpt.onnx` gelöscht oder willst seine Ausdrücke ändern | Ohne diese Datei hört Spot Voice auf sein eingebautes Ersatzwort **„Alexa“**. `./install.sh train chatgpt` trainiert „Hey ChatGPT“ und „Danke ChatGPT“ neu aus der Wortdatei im Repository. |
 | Du willst ein anderes Wort, zum Beispiel „Hey Computer“ | Eine eigene Wortdatei, eine kleine Textdatei. |
 | Der Spot wacht bei etwas auf, das bei dir oft fällt (ein Name, eine Fernsehsendung) | Trag diesen Ausdruck als *Negativphrase* ein und trainiere neu. Siehe auch [Der Spot wacht von selbst auf](09-troubleshooting.md#der-spot-wacht-von-selbst-auf). |
 | Das Wort wird so, wie du es sagst, schlecht erkannt | Ergänze Schreibweisen, die nach deiner Aussprache klingen. |
@@ -329,7 +329,7 @@ hey_claude.onnx  (input 16 x 96; trigger: 2 frames > threshold)
 > [!IMPORTANT]
 > `evaluate.py` zählt standardmäßig eine Auslösung nach **2** Fenstern über der Schwelle. Spot Voice verlangt mehr
 > Fenster (siehe Tabelle unten, Standard 4). Willst du mit dem Spot vergleichen, gib dieselben Werte an, zum Beispiel
-> `--thresholds 0.6 --frames 4`. Das Stoppwort nutzt auf dem Spot 2 Fenster, da passt die Standardmessung also schon.
+> `--thresholds 0.6 --frames 4`. Das Stoppwort nutzt für Claude 2 Fenster und für ChatGPT 3.
 
 <a id="sensitivity-what-the-numbers-mean-on-the-spot"></a>
 
@@ -337,20 +337,21 @@ hey_claude.onnx  (input 16 x 96; trigger: 2 frames > threshold)
 
 Das Wake-Word löst aus, wenn der Wert mehrere Fenster hintereinander über der Schwelle bleibt (ein Fenster = 80 ms).
 Die Zahl der Fenster wirkt viel stärker als die Schwelle. Der Installer bietet drei Stufen an
-(`./install.sh voice --sensitivity high|normal|low`). Gemessen mit `evaluate.py` für **Hey Claude**
-(Modell v2): Fehlauslösungen in den 10,7 Stunden echter Audioaufnahmen, Trefferquote an 400 neuen künstlichen „Hey Claude“-Clips.
+(`./install.sh voice --sensitivity high|normal|low`). Gemessen mit `evaluate.py` für **Hey Claude** (Modell v2)
+und **Hey ChatGPT** (Modell v1): Fehlauslösungen in den 10,7 Stunden echter Audioaufnahmen, Trefferquote an neuen
+künstlichen Clips (400 für Claude, 2000 für ChatGPT; verschiedene Testsätze, vergleiche also die Stufen, nicht die Modelle).
 
-| Empfindlichkeit | Schwelle / Fenster | Trefferquote | Fehlauslösungen pro Stunde |
-|---|---|---|---|
-| `high` | 0,6 / 3 | 63 % | 0,93 |
-| `normal` (Standard) | 0,6 / 4 | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) |
-| `low` | 0,6 / 5 | 45 % | 0 in 10,7 Stunden |
+| Empfindlichkeit | Schwelle / Fenster | Hey Claude: Trefferquote | Fehlauslösungen/h | Hey ChatGPT: Trefferquote | Fehlauslösungen/h |
+|---|---|---|---|---|---|
+| `high` | 0,6 / 3 | 63 % | 0,93 | 79 % | 0,65 |
+| `normal` (Standard) | 0,6 / 4 | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) | 73 % | 0,19 (etwa alle 5 Stunden einmal) |
+| `low` | 0,6 / 5 | 45 % | 0 in 10,7 Stunden | 67 % | 0,09 |
 
 Eine ältere Einstellung (0,7 bei 2 Fenstern) erreichte 70 % Trefferquote, löste aber 1,9-mal pro Stunde grundlos aus:
 In einem Raum mit Stimmen hat sich der Spot „von selbst eingeschaltet“. Deshalb gibt es die Regel mit den Fenstern.
 Das Stoppwort „Danke Claude“ (0,5, 2 Fenster) löst 0,47-mal pro Stunde fälschlich aus, hört aber nur während eines Gesprächs zu.
-
-Werte für ChatGPT folgen, sobald dessen Modelle trainiert und gemessen sind.
+„Danke ChatGPT“ braucht auf dem Spot 3 Fenster (0,5, 3 Fenster: 0,84 Fehlauslösungen pro Stunde, 69 % Trefferquote;
+mit 2 Fenstern wären es 2,8 pro Stunde). Die Fenster für das Stoppwort stehen je Assistent in `Assistant.kt` (`stopFrames`).
 
 <a id="test-with-your-own-voice"></a>
 

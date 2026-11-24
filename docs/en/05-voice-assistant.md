@@ -28,8 +28,8 @@ Both are supported, and you can switch at any time (see [Switching between Claud
 | App | Claude by Anthropic (`com.anthropic.claude`) | ChatGPT by OpenAI (`com.openai.chatgpt`) |
 | Installed through | Aurora Store (no Google account needed) | Aurora Store (no Google account needed) |
 | Log in with | e-mail magic link, opened on the Spot with `./install.sh open-link` | e-mail address plus the code from the e-mail, typed on the Spot |
-| Wake word | "Hey Claude" | "Hey ChatGPT" (model in training; until then "Alexa", see below) |
-| Stop word (on the Spot) | "Danke Claude", "Claude stopp" | "Danke ChatGPT" (model in training) |
+| Wake word | "Hey Claude" | "Hey ChatGPT" |
+| Stop word (on the Spot) | "Danke Claude", "Claude stopp" | "Danke ChatGPT", "ChatGPT stopp", "thanks ChatGPT" |
 | Status | tested on a real Spot | new, tested less than Claude |
 
 You need your own account with Anthropic or OpenAI. What the app's voice mode offers on your plan is what you get on the Spot.
@@ -169,13 +169,13 @@ The example uses Claude. ChatGPT works the same way.
 | Assistant | Wake word (starts) | Stop word (ends, detected on the Spot) | Goodbyes recognised in the transcript |
 |---|---|---|---|
 | Claude | "Hey Claude" | "Danke Claude", "Claude stopp" | "thank you Claude", "thanks Claude", "bye Claude", "tschüss Claude", "Claude stopp", "Claude, that's all", … |
-| ChatGPT | "Hey ChatGPT" (model in training) | "Danke ChatGPT" (model in training) | "thanks ChatGPT", "stop ChatGPT", "danke ChatGPT", … |
+| ChatGPT | "Hey ChatGPT" | "Danke ChatGPT", "ChatGPT stopp", "thanks ChatGPT" | "thanks ChatGPT", "stop ChatGPT", "danke ChatGPT", … |
 
-- The **wake word** and the **stop word** are small neural-network models ([openWakeWord](https://github.com/dscripka/openWakeWord)) that run on the Spot itself. The trained Claude models ship with this project in `models/`. They were trained on synthetic German and English voices. Chapter 8 shows how to train your own.
+- The **wake word** and the **stop word** are small neural-network models ([openWakeWord](https://github.com/dscripka/openWakeWord)) that run on the Spot itself. The trained models for Claude and ChatGPT ship with this project in `models/`. They were trained on synthetic German and English voices. Chapter 8 shows how to train your own.
 - The **goodbyes** work differently. EchoGuard reads the new transcript lines in the assistant's window and looks for a farewell word next to the assistant's name. Words before the name: danke, dankeschön, stopp, tschüss, ciao, ende, beenden, auf wiedersehen, bye, thank you, thanks, goodbye, see you. Words after the name: stopp, danke, tschüss, ende, beenden, aus, bye, goodbye, that's all. Common mis-hearings of the name, such as "Cloud" or "Klaud", count too. This check only works if the assistant app shows a transcript on screen.
 
 > [!NOTE]
-> **Fallback "Alexa".** If no trained wake-word model exists for the selected assistant, Spot Voice uses openWakeWord's built-in **"Alexa"** model, which fits the Echo Spot. The installer then warns you: `models/hey_chatgpt.onnx or models/danke_chatgpt.onnx is missing - Spot Voice uses its built-in wake word "Alexa" for ChatGPT until a trained model exists.` Right now this is the case for ChatGPT: the "Hey ChatGPT" and "Danke ChatGPT" models are still being trained. Without a stop-word model, saying the wake word again ends the conversation.
+> **Fallback "Alexa".** If no trained wake-word model exists for the selected assistant, Spot Voice uses openWakeWord's built-in **"Alexa"** model, which fits the Echo Spot. The installer then warns you: `models/hey_chatgpt.onnx or models/danke_chatgpt.onnx is missing - Spot Voice uses its built-in wake word "Alexa" for ChatGPT until a trained model exists.` Without a stop-word model, saying the wake word again ends the conversation.
 
 ---
 
@@ -236,20 +236,20 @@ On the dim night face the dot is dim orange while Spot Voice listens and gray wh
 
 Every 80 milliseconds the wake-word model gives a score between 0 and 1 for "was that 'Hey Claude'?". The Spot wakes up only when the score stays above the **threshold** for several **consecutive frames** (80 ms each). The number of frames matters far more than the threshold itself.
 
-Measured with `training/evaluate.py` on the `hey_claude` v2 model:
+Measured with `training/evaluate.py` on the `hey_claude` v2 and `hey_chatgpt` v1 models:
 
-| Sensitivity (`--sensitivity`) | Threshold / frames | Recall¹ | False wakes per hour² |
-|---|---|---|---|
-| `high` | 0.6 / 3 | 63 % | 0.93 |
-| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) |
-| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h |
+| Sensitivity (`--sensitivity`) | Threshold / frames | "Hey Claude": recall¹ | false wakes per hour² | "Hey ChatGPT": recall¹ | false wakes per hour² |
+|---|---|---|---|---|---|
+| `high` | 0.6 / 3 | 63 % | 0.93 | 79 % | 0.65 |
+| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) | 73 % | 0.19 (about once every 5 h) |
+| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h | 67 % | 0.09 (once in 10.7 h) |
 
-¹ Share of 400 fresh synthetic "Hey Claude" clips that woke the model. This is an upper bound: real rooms with distance, echo and noise are harder, so expect to repeat the wake word now and then.<br>
+¹ Share of fresh synthetic clips that woke the model: 400 "Hey Claude" clips, 2000 "Hey ChatGPT" test clips that were generated during training but never trained on. The two test sets differ, so compare settings rather than the two models. This is an upper bound: real rooms with distance, echo and noise are harder, so expect to repeat the wake word now and then.<br>
 ² Measured on 10.7 hours of real-world audio (the openWakeWord validation set): speech, music, TV.
 
-Why frames? An earlier setting of 0.7 / 2 frames heard you better (70 %), but it woke up 1.9 times an hour, and the Spot "switched itself on" in a room with voices. Requiring the score to stay high for a little longer filters out most of those. The stop word ("Danke Claude", 0.5 / 2 frames) has 0.47 false triggers per hour. It only listens during a conversation, where a false trigger just ends the conversation early.
+Why frames? An earlier setting of 0.7 / 2 frames heard you better (70 %), but it woke up 1.9 times an hour, and the Spot "switched itself on" in a room with voices. Requiring the score to stay high for a little longer filters out most of those. The stop word only listens during a conversation, where a false trigger just ends the conversation early. Its frame count is fixed per assistant: "Danke Claude" (0.5 / 2 frames) has 0.47 false triggers per hour, "Danke ChatGPT" (0.5 / 3 frames) has 0.84 and hears 69 % of the test clips. With 2 frames "Danke ChatGPT" would end a conversation 2.8 times an hour by mistake.
 
-Values for "Hey ChatGPT" will follow once its model is trained. Until then the installer uses the same settings for ChatGPT (the installer calls them provisional).
+The installer uses the same thresholds for both assistants.
 
 ### How to change it
 

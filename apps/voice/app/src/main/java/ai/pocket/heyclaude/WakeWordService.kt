@@ -77,8 +77,6 @@ class WakeWordService : Service() {
         private const val CHANNEL_ID = "listening"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLE_RATE = 16_000
-        /** Stop word: consecutive frames above its threshold (the wake word uses Prefs.triggerFrames). */
-        private const val STOP_TRIGGER_FRAMES = 2
         /** Ignore triggers for the first frames after (re)start: ~1 s @ 80 ms. */
         private const val WARMUP_FRAMES = 12
         /** All-zero audio for this long => the OS is probably silencing us. */
@@ -629,6 +627,8 @@ class WakeWordService : Service() {
         detector.reset()
         val owd = detector as? OpenWakeWordDetector
         val stopModel = Prefs.assistant(this).stopModelFile
+        // Stop word: consecutive frames above its threshold, per assistant (the wake word uses Prefs.triggerFrames).
+        val stopFrames = Prefs.assistant(this).stopFrames
         val hasStop = owd?.attachExtra(this, stopModel) == true
         if (!hasStop && !stopModelMissingLogged) {
             stopModelMissingLogged = true
@@ -671,7 +671,7 @@ class WakeWordService : Service() {
                 val now = SystemClock.elapsedRealtime()
                 val hot = frames > WARMUP_FRAMES && now > cooldownUntil && score > 1f
                 consecutive = if (hot) consecutive + 1 else 0
-                if (consecutive >= STOP_TRIGGER_FRAMES) {
+                if (consecutive >= stopFrames) {
                     Log.i(Constants.TAG, "Wake/stop word during conversation (score=$score) -> end it")
                     consecutive = 0
                     cooldownUntil = now + 4_000

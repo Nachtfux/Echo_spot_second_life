@@ -97,7 +97,7 @@ scores with the official openWakeWord package frame by frame.
 | | Wake word | Stop word (and wake word during a conversation) |
 |---|---|---|
 | When | listening for the wake word | only while a conversation runs |
-| Rule | score > threshold on **N consecutive frames** | score / own threshold > 1 on **2 consecutive frames** |
+| Rule | score > threshold on **N consecutive frames** | score / own threshold > 1 on **2 consecutive frames** (ChatGPT: 3; `stopFrames` in `Assistant.kt`) |
 | Defaults set by the installer | threshold 0.6, N = 3 / 4 / 5 for `--sensitivity high / normal / low` | stop threshold 0.5 |
 | Built-in defaults (no broadcast) | threshold 0.5, N = 4 | 0.5 |
 | After a trigger | microphone released for the session | 4 s cooldown |

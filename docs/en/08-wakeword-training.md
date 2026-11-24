@@ -4,9 +4,9 @@
 
 > **Goal:** train a wake word and a stop word on your computer, measure how well they work and put them on the Spot · **Time:** 1.5–2.5 h of computer time for a full run (30–45 min for a smoke test), about 15 min of your own · **Installer:** `./install.sh train <set>`
 
-The repository already contains trained models for "Hey Claude" and "Danke Claude" in `models/`.
-You do **not** need this chapter to use the Spot. Come here when you want a different word, when you use
-ChatGPT and need its models, or when the wake word does not fit your home.
+The repository already contains trained models for "Hey Claude", "Danke Claude", "Hey ChatGPT" and
+"Danke ChatGPT" in `models/`. You do **not** need this chapter to use the Spot. Come here when you want a
+different word or when the wake word does not fit your home.
 
 Everything in this chapter runs on your computer. The Spot is only needed at the very end, to install
 the result.
@@ -15,7 +15,7 @@ the result.
 
 | Situation | What training gives you |
 |---|---|
-| You use ChatGPT and `models/` has no `hey_chatgpt.onnx` yet | Without that file Spot Voice listens for its built-in fallback word **"Alexa"**. `./install.sh train chatgpt` trains "Hey ChatGPT" and "Danke ChatGPT" from the word set in the repository. |
+| You deleted `models/hey_chatgpt.onnx` or want to change its phrases | Without that file Spot Voice listens for its built-in fallback word **"Alexa"**. `./install.sh train chatgpt` trains "Hey ChatGPT" and "Danke ChatGPT" again from the word set in the repository. |
 | You want another word, for example "Hey Computer" | A word set of your own, in a small text file. |
 | The Spot wakes up on something in your home (a name, a TV show) | Add that phrase as a *negative* and train again. See also [The Spot wakes up by itself](09-troubleshooting.md#the-spot-wakes-up-by-itself). |
 | The word is not recognised well the way you say it | Add spellings that sound like your pronunciation. |
@@ -306,26 +306,27 @@ hey_claude.onnx  (input 16 x 96; trigger: 2 frames > threshold)
 > [!IMPORTANT]
 > `evaluate.py` counts a trigger after **2** frames above the threshold by default. Spot Voice uses more
 > frames (see the table below; default 4). To compare with the Spot, pass the same values, for example
-> `--thresholds 0.6 --frames 4`. The stop word uses 2 frames on the Spot, so its default evaluation already matches.
+> `--thresholds 0.6 --frames 4`. The stop word uses 2 frames for Claude and 3 for ChatGPT.
 
 ### Sensitivity: what the numbers mean on the Spot
 
 The wake word fires when the score stays above the threshold for several frames in a row (one frame = 80 ms).
 The number of frames matters much more than the threshold. The installer offers three settings
 (`./install.sh voice --sensitivity high|normal|low`). Measured with `evaluate.py` for **Hey Claude**
-(v2 model): false alarms on the 10.7 h of real-world audio, recall on 400 fresh synthetic "Hey Claude" clips.
+(v2 model) and **Hey ChatGPT** (v1 model): false alarms on the 10.7 h of real-world audio, recall on fresh
+synthetic clips (400 for Claude, 2000 for ChatGPT; different test sets, so compare settings, not models).
 
-| Sensitivity | Threshold / frames | Recall | False wakes per hour |
-|---|---|---|---|
-| `high` | 0.6 / 3 | 63 % | 0.93 |
-| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) |
-| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h |
+| Sensitivity | Threshold / frames | Hey Claude: recall | false wakes/h | Hey ChatGPT: recall | false wakes/h |
+|---|---|---|---|---|---|
+| `high` | 0.6 / 3 | 63 % | 0.93 | 79 % | 0.65 |
+| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) | 73 % | 0.19 (about once every 5 h) |
+| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h | 67 % | 0.09 |
 
 An older setting (0.7 with 2 frames) had 70 % recall but 1.9 false wakes per hour: the Spot "switched itself on"
 in a room with voices. That is why the frame rule exists. The stop word "Danke Claude" (0.5, 2 frames) has
-0.47 false triggers per hour, and it only listens during a conversation.
-
-Values for ChatGPT will follow once its models are trained and measured.
+0.47 false triggers per hour, and it only listens during a conversation. "Danke ChatGPT" needs 3 frames on
+the Spot (0.5, 3 frames: 0.84 false triggers per hour, 69 % recall; with 2 frames it would be 2.8 per hour).
+The stop-word frames are set per assistant in `Assistant.kt` (`stopFrames`).
 
 ### Test with your own voice
 

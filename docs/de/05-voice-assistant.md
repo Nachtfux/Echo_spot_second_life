@@ -28,8 +28,8 @@ Beide werden unterstützt, und du kannst jederzeit wechseln (siehe [Zwischen Cla
 | App | Claude von Anthropic (`com.anthropic.claude`) | ChatGPT von OpenAI (`com.openai.chatgpt`) |
 | Installiert über | Aurora Store (kein Google-Konto nötig) | Aurora Store (kein Google-Konto nötig) |
 | Anmeldung | Magic Link per E-Mail, auf dem Spot geöffnet mit `./install.sh open-link` | E-Mail-Adresse und Code aus der E-Mail, auf dem Spot eingetippt |
-| Wake-Word | „Hey Claude“ | „Hey ChatGPT“ (Modell im Training; bis dahin „Alexa“, siehe unten) |
-| Stoppwort (auf dem Spot erkannt) | „Danke Claude“, „Claude stopp“ | „Danke ChatGPT“ (Modell im Training) |
+| Wake-Word | „Hey Claude“ | „Hey ChatGPT“ |
+| Stoppwort (auf dem Spot erkannt) | „Danke Claude“, „Claude stopp“ | „Danke ChatGPT“, „ChatGPT stopp“, „thanks ChatGPT“ |
 | Stand | auf einem echten Spot getestet | neu, weniger getestet als Claude |
 
 Du brauchst ein eigenes Konto bei Anthropic oder OpenAI. Was der Sprachmodus der App in deinem Tarif kann, bekommst du auch auf dem Spot.
@@ -169,13 +169,13 @@ Das Beispiel nutzt Claude. Mit ChatGPT läuft es genauso.
 | Assistent | Wake-Word (startet) | Stoppwort (beendet, auf dem Spot erkannt) | Verabschiedungen im Transkript |
 |---|---|---|---|
 | Claude | „Hey Claude“ | „Danke Claude“, „Claude stopp“ | „danke Claude“, „tschüss Claude“, „Claude stopp“, „Claude, ende“, „thank you Claude“, „bye Claude“, „Claude, that's all“, … |
-| ChatGPT | „Hey ChatGPT“ (Modell im Training) | „Danke ChatGPT“ (Modell im Training) | „danke ChatGPT“, „stopp ChatGPT“, „thanks ChatGPT“, … |
+| ChatGPT | „Hey ChatGPT“ | „Danke ChatGPT“, „ChatGPT stopp“, „thanks ChatGPT“ | „danke ChatGPT“, „stopp ChatGPT“, „thanks ChatGPT“, … |
 
-- **Wake-Word** und **Stoppwort** sind kleine neuronale Netze ([openWakeWord](https://github.com/dscripka/openWakeWord)), die auf dem Spot selbst laufen. Die trainierten Claude-Modelle liegen diesem Projekt in `models/` bei. Sie wurden mit synthetischen deutschen und englischen Stimmen trainiert. Kapitel 8 zeigt, wie du eigene trainierst.
+- **Wake-Word** und **Stoppwort** sind kleine neuronale Netze ([openWakeWord](https://github.com/dscripka/openWakeWord)), die auf dem Spot selbst laufen. Die trainierten Modelle für Claude und ChatGPT liegen diesem Projekt in `models/` bei. Sie wurden mit synthetischen deutschen und englischen Stimmen trainiert. Kapitel 8 zeigt, wie du eigene trainierst.
 - Die **Verabschiedungen** funktionieren anders. EchoGuard liest die neuen Zeilen des Transkripts im Fenster des Assistenten und sucht ein Abschiedswort direkt neben dem Namen des Assistenten. Wörter vor dem Namen: danke, dankeschön, stopp, tschüss, ciao, ende, beenden, auf wiedersehen, bye, thank you, thanks, goodbye, see you. Wörter nach dem Namen: stopp, danke, tschüss, ende, beenden, aus, bye, goodbye, that's all. Typische Verhörer des Namens wie „Cloud“ oder „Klaud“ zählen auch. Diese Prüfung klappt nur, wenn die Assistenten-App ein Transkript auf dem Bildschirm zeigt.
 
 > [!NOTE]
-> **Notlösung „Alexa“.** Gibt es für den gewählten Assistenten kein trainiertes Wake-Word-Modell, nimmt Spot Voice das eingebaute **„Alexa“**-Modell von openWakeWord. Das passt ja zum Echo Spot. Der Installer warnt dich dann: `models/hey_chatgpt.onnx oder models/danke_chatgpt.onnx fehlt - Spot Voice nutzt für ChatGPT das eingebaute Wake-Word "Alexa", bis ein trainiertes Modell da ist.` Genau das ist im Moment bei ChatGPT der Fall: Die Modelle für „Hey ChatGPT“ und „Danke ChatGPT“ werden noch trainiert. Ohne Stoppwort-Modell beendest du das Gespräch, indem du noch einmal das Wake-Word sagst.
+> **Notlösung „Alexa“.** Gibt es für den gewählten Assistenten kein trainiertes Wake-Word-Modell, nimmt Spot Voice das eingebaute **„Alexa“**-Modell von openWakeWord. Das passt ja zum Echo Spot. Der Installer warnt dich dann: `models/hey_chatgpt.onnx oder models/danke_chatgpt.onnx fehlt - Spot Voice nutzt für ChatGPT das eingebaute Wake-Word "Alexa", bis ein trainiertes Modell da ist.` Ohne Stoppwort-Modell beendest du das Gespräch, indem du noch einmal das Wake-Word sagst.
 
 ---
 
@@ -236,20 +236,20 @@ In der gedimmten Nachtansicht ist der Punkt gedämpft orange, solange Spot Voice
 
 Alle 80 Millisekunden gibt das Wake-Word-Modell einen Wert zwischen 0 und 1 aus: „War das ‚Hey Claude'?“. Der Spot wacht nur auf, wenn dieser Wert mehrere **Fenster** (je 80 ms) hintereinander über der **Schwelle** bleibt. Die Zahl der Fenster wirkt viel stärker als die Schwelle selbst.
 
-Gemessen mit `training/evaluate.py` am Modell `hey_claude` v2:
+Gemessen mit `training/evaluate.py` an den Modellen `hey_claude` v2 und `hey_chatgpt` v1:
 
-| Empfindlichkeit (`--sensitivity`) | Schwelle / Fenster | Trefferquote¹ | Fehlauslösungen pro Stunde² |
-|---|---|---|---|
-| `high` | `0.6` / `3` | 63 % | 0,93 |
-| `normal` (Standard) | `0.6` / `4` | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) |
-| `low` | `0.6` / `5` | 45 % | 0 in 10,7 Stunden |
+| Empfindlichkeit (`--sensitivity`) | Schwelle / Fenster | „Hey Claude“: Trefferquote¹ | Fehlauslösungen pro Stunde² | „Hey ChatGPT“: Trefferquote¹ | Fehlauslösungen pro Stunde² |
+|---|---|---|---|---|---|
+| `high` | `0.6` / `3` | 63 % | 0,93 | 79 % | 0,65 |
+| `normal` (Standard) | `0.6` / `4` | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) | 73 % | 0,19 (etwa alle 5 Stunden einmal) |
+| `low` | `0.6` / `5` | 45 % | 0 in 10,7 Stunden | 67 % | 0,09 (einmal in 10,7 Stunden) |
 
-¹ Anteil von 400 neuen synthetischen „Hey Claude“-Aufnahmen, bei denen das Modell ausgelöst hat. Das ist eine Obergrenze: Echte Räume mit Abstand, Hall und Geräuschen sind schwieriger. Rechne also damit, das Wake-Word ab und zu wiederholen zu müssen.<br>
+¹ Anteil neuer synthetischer Aufnahmen, bei denen das Modell ausgelöst hat: 400 „Hey Claude“-Aufnahmen, 2000 „Hey ChatGPT“-Testaufnahmen, die beim Training entstanden, aber nie zum Trainieren benutzt wurden. Die beiden Testsätze sind verschieden. Vergleiche also die Stufen, nicht die beiden Modelle. Das ist eine Obergrenze: Echte Räume mit Abstand, Hall und Geräuschen sind schwieriger. Rechne also damit, das Wake-Word ab und zu wiederholen zu müssen.<br>
 ² Gemessen an 10,7 Stunden echter Audioaufnahmen (dem Validierungsdatensatz von openWakeWord): Sprache, Musik, Fernsehen.
 
-Warum Fenster? Eine frühere Einstellung mit 0,7 / 2 Fenstern hat dich besser gehört (70 %), ist aber 1,9-mal pro Stunde aufgewacht. In einem Raum mit Stimmen hat sich der Spot „von selbst eingeschaltet“. Muss der Wert etwas länger hoch bleiben, fällt das meiste davon weg. Das Stoppwort („Danke Claude“, 0,5 / 2 Fenster) löst 0,47-mal pro Stunde fälschlich aus. Es hört aber nur während eines Gesprächs zu, und dort beendet eine Fehlauslösung bloß das Gespräch etwas früher.
+Warum Fenster? Eine frühere Einstellung mit 0,7 / 2 Fenstern hat dich besser gehört (70 %), ist aber 1,9-mal pro Stunde aufgewacht. In einem Raum mit Stimmen hat sich der Spot „von selbst eingeschaltet“. Muss der Wert etwas länger hoch bleiben, fällt das meiste davon weg. Das Stoppwort hört nur während eines Gesprächs zu, und dort beendet eine Fehlauslösung bloß das Gespräch etwas früher. Seine Fensterzahl ist je Assistent fest eingestellt: „Danke Claude“ (0,5 / 2 Fenster) löst 0,47-mal pro Stunde fälschlich aus, „Danke ChatGPT“ (0,5 / 3 Fenster) 0,84-mal und erkennt 69 % der Testaufnahmen. Mit 2 Fenstern würde „Danke ChatGPT“ ein Gespräch 2,8-mal pro Stunde versehentlich beenden.
 
-Werte für „Hey ChatGPT“ folgen, sobald das Modell trainiert ist. Bis dahin nutzt der Installer für ChatGPT dieselben Einstellungen (er nennt sie vorläufig).
+Der Installer nutzt für beide Assistenten dieselben Schwellen.
 
 ### So änderst du sie
 

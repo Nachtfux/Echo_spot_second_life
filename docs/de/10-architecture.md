@@ -105,7 +105,7 @@ vergleicht die Werte der App Fenster für Fenster mit dem offiziellen openWakeWo
 | | Wake-Word | Stoppwort (und Wake-Word während eines Gesprächs) |
 |---|---|---|
 | Wann | beim Warten auf das Wake-Word | nur während ein Gespräch läuft |
-| Regel | Wert > Schwelle in **N Fenstern hintereinander** | Wert / eigene Schwelle > 1 in **2 Fenstern hintereinander** |
+| Regel | Wert > Schwelle in **N Fenstern hintereinander** | Wert / eigene Schwelle > 1 in **2 Fenstern hintereinander** (ChatGPT: 3; `stopFrames` in `Assistant.kt`) |
 | Standard vom Installer | Schwelle 0,6, N = 3 / 4 / 5 für `--sensitivity high / normal / low` | Stoppschwelle 0,5 |
 | Eingebauter Standard (ohne Broadcast) | Schwelle 0,5, N = 4 | 0,5 |
 | Nach einer Auslösung | Mikrofon für die Sitzung freigegeben | 4 s Pause |

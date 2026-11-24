@@ -641,22 +641,22 @@ Radio oder in einem Gespräch im Raum etwas vor, das ähnlich klang.
    ```
 
 3. Stell den Spot weiter weg vom Fernseher oder Lautsprecher. Von dort kommen die meisten Fehlauslösungen.
-4. Du nutzt ChatGPT ohne trainierte ChatGPT-Modelle? Dann ist das Wake-Word **„Alexa“**, und das fällt im Fernsehen oft.
-   Trainiere „Hey ChatGPT“: [Kapitel 8](08-wakeword-training.md).
+4. Spot Voice zeigt `alexa_v0.1 (fallback)`? Dann ist das Wake-Word **„Alexa“**, und das fällt im Fernsehen oft.
+   Starte `./install.sh voice` noch einmal, damit die trainierten Modelle auf den Spot kommen; siehe [Kapitel 8](08-wakeword-training.md).
 5. Ein bestimmtes Wort bei dir zu Hause löst immer wieder aus? Trag es als Negativphrase ein und trainiere dein eigenes Modell
    ([Kapitel 8](08-wakeword-training.md#negativphrasen)).
 6. Zuhören für eine Weile abschalten: Spot Voice öffnen und auf **„Zuhören stoppen“** tippen, oder in seiner
    Benachrichtigung auf **„Stopp“**. Mit „Zuhören starten“ schaltest du es wieder ein.
 
-Gemessen für „Hey Claude“ (Fehlauslösungen in 10,7 Stunden echter Audioaufnahmen; Trefferquote an künstlichen Clips):
+Gemessen für „Hey Claude“ und „Hey ChatGPT“ (Fehlauslösungen in 10,7 Stunden echter Audioaufnahmen; Trefferquote an künstlichen Clips):
 
-| `--sensitivity` | Schwelle / Fenster | Trefferquote | Fehlauslösungen pro Stunde |
-|---|---|---|---|
-| `high` | 0,6 / 3 | 63 % | 0,93 |
-| `normal` (Standard) | 0,6 / 4 | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) |
-| `low` | 0,6 / 5 | 45 % | 0 in 10,7 Stunden |
+| `--sensitivity` | Schwelle / Fenster | Hey Claude: Trefferquote | Fehlauslösungen/h | Hey ChatGPT: Trefferquote | Fehlauslösungen/h |
+|---|---|---|---|---|---|
+| `high` | 0,6 / 3 | 63 % | 0,93 | 79 % | 0,65 |
+| `normal` (Standard) | 0,6 / 4 | 55 % | 0,28 (etwa alle 3,5 Stunden einmal) | 73 % | 0,19 (etwa alle 5 Stunden einmal) |
+| `low` | 0,6 / 5 | 45 % | 0 in 10,7 Stunden | 67 % | 0,09 |
 
-Werte für ChatGPT folgen. Mehr zu diesen Zahlen: [Kapitel 8](08-wakeword-training.md#empfindlichkeit-was-die-zahlen-auf-dem-spot-bedeuten).
+Mehr zu diesen Zahlen: [Kapitel 8](08-wakeword-training.md#empfindlichkeit-was-die-zahlen-auf-dem-spot-bedeuten).
 
 <a id="wake-word-not-recognised"></a><a id="the-wake-word-does-not-react"></a>
 

@@ -145,7 +145,7 @@ Useful commands later on:
 | Unlock (amonet-rook v2.0.0), backup, LineageOS 18.1 v0.3 | Done once on a real Echo Spot on 2026-11-23, from macOS on Apple Silicon, starting from Fire OS 5.5.6.9. These steps are **not** repeated for every release. |
 | Phases `voice`, `clock`, `verify` | Run end to end against a real Spot on 2026-11-24: all checks green, and the live test opened Claude voice mode. The steps behind `setup` and `apps` were done and checked on the same Spot. |
 | Claude voice mode | Works hands-free: wake word, automatic tap on the voice button, echo guard, ending by stop word or silence. |
-| ChatGPT voice mode | **New, tested less than Claude.** The ChatGPT app installs and runs on the Spot. The labels of its voice-mode buttons are still being calibrated. The "Hey ChatGPT" wake-word model is still in training; until it is added, the wake word for ChatGPT is "Alexa". |
+| ChatGPT voice mode | **New, tested less than Claude.** The ChatGPT app installs and runs on the Spot. The labels of its voice-mode buttons are still being calibrated. Trained "Hey ChatGPT" and "Danke ChatGPT" models ship in `models/`. |
 | Voice commands | German commands tested on the Spot (timer, alarm, radio). The English commands are unit-tested and have been used less on a real Spot. |
 | Wake word "Hey Claude" | At the default sensitivity it recognised 55 % of 400 synthetic test clips and woke up falsely 0.28 times per hour on 10.7 hours of real-world audio. Real rooms are harder than the test clips. Details and tuning: [chapter 5](docs/en/05-voice-assistant.md). |
 | Computers | macOS tested. Linux should work but is untested. Windows is not supported by `install.sh` (amonet itself ships Windows scripts for the unlock). |

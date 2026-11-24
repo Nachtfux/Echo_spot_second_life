@@ -595,22 +595,22 @@ conversation in the room contained something that sounded similar.
    ```
 
 3. Move the Spot away from the TV or the loudspeaker. Most false wakes come from there.
-4. Using ChatGPT without trained ChatGPT models? Then the wake word is **"Alexa"**, which is said a lot on TV.
-   Train "Hey ChatGPT": [chapter 8](08-wakeword-training.md).
+4. Spot Voice shows `alexa_v0.1 (fallback)`? Then the wake word is **"Alexa"**, which is said a lot on TV.
+   Run `./install.sh voice` again to copy the trained models; see [chapter 8](08-wakeword-training.md).
 5. A word in your home keeps triggering it? Add it as a negative phrase and train your own model
    ([chapter 8](08-wakeword-training.md#negative-phrases)).
 6. To stop listening for a while: open Spot Voice and tap **"Stop listening"**, or tap **"Stop"** in its
    notification. Tap "Start listening" to turn it on again.
 
-Measured for "Hey Claude" (false wakes on 10.7 h of real-world audio; recall on synthetic clips):
+Measured for "Hey Claude" and "Hey ChatGPT" (false wakes on 10.7 h of real-world audio; recall on synthetic clips):
 
-| `--sensitivity` | Threshold / frames | Recall | False wakes per hour |
-|---|---|---|---|
-| `high` | 0.6 / 3 | 63 % | 0.93 |
-| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) |
-| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h |
+| `--sensitivity` | Threshold / frames | Hey Claude: recall | false wakes/h | Hey ChatGPT: recall | false wakes/h |
+|---|---|---|---|---|---|
+| `high` | 0.6 / 3 | 63 % | 0.93 | 79 % | 0.65 |
+| `normal` (default) | 0.6 / 4 | 55 % | 0.28 (about once every 3.5 h) | 73 % | 0.19 (about once every 5 h) |
+| `low` | 0.6 / 5 | 45 % | 0 in 10.7 h | 67 % | 0.09 |
 
-Values for ChatGPT will follow. More about these numbers: [chapter 8](08-wakeword-training.md#sensitivity-what-the-numbers-mean-on-the-spot).
+More about these numbers: [chapter 8](08-wakeword-training.md#sensitivity-what-the-numbers-mean-on-the-spot).
 
 <a id="the-wake-word-does-not-react"></a>
 

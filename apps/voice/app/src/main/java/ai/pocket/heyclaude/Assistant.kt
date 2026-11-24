@@ -35,6 +35,12 @@ enum class Assistant(
      * typical mis-hearings. Used for spoken stop phrases ("danke Claude", "thanks ChatGPT").
      */
     val nameRegex: String,
+    /**
+     * Consecutive 80 ms frames the stop word must stay above its threshold during a conversation.
+     * Measured with training/evaluate.py on 10.7 h of real-world audio: danke_claude 0.5/2 frames
+     * 0.47 false stops per hour; danke_chatgpt 0.5/2 frames 2.8 per hour, 0.5/3 frames 0.84.
+     */
+    val stopFrames: Int,
 ) {
     // Claude values were calibrated on a real Echo Spot (German UI) — keep them as they are.
     CLAUDE(
@@ -57,6 +63,7 @@ enum class Assistant(
         endButton = Regex("(?i)^(beenden|end|end call|end voice mode)$"),
         endNotificationAction = Regex("(?i)^(beenden|auflegen|end|end call|hang up)$"),
         nameRegex = "claude|claud|klaud|clod|cloud|klod",
+        stopFrames = 2,
     ),
 
     // ChatGPT values are best-effort guesses for the German and English UI.
@@ -85,6 +92,7 @@ enum class Assistant(
         // calibrate on device via DUMP_NODES (notification of a running voice session)
         endNotificationAction = Regex("(?i)^(beenden|auflegen|end|end call|hang up|end voice mode|sprachmodus beenden|stop|stopp|stoppen)$"),
         nameRegex = "chat[ -]?g\\.? ?p\\.? ?t|chat[ -]?gbt|tsch[aä]tt? ?g ?p ?t",
+        stopFrames = 3,
     ),
     ;
 

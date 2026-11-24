@@ -126,10 +126,6 @@ phase_voice() {
     --ef wake "$(assistant_wake_threshold "$a")" --ef stop "$(assistant_stop_threshold "$a")" \
     --ei frames "$(sensitivity_frames "$CFG_SENSITIVITY")" >/dev/null
   ok "$(L "assistant" "Assistent")=$a, $(L "language" "Sprache")=$lang, wake=$(assistant_wake_threshold "$a")/$(sensitivity_frames "$CFG_SENSITIVITY") $(L "frames" "Fenster") (${CFG_SENSITIVITY:-normal}), stop=$(assistant_stop_threshold "$a")"
-  if [ "$a" = chatgpt ]; then
-    hint "$(L "ChatGPT thresholds are provisional (not tuned yet). Tuning: docs/$UI_LANG/05-voice-assistant.md" \
-              "Die ChatGPT-Schwellen sind vorläufig (noch nicht abgestimmt). Abstimmen: docs/$UI_LANG/05-voice-assistant.md")"
-  fi
   adb_sh am start-foreground-service -n "$VOICE_SERVICE" >/dev/null
   ok "$(L "Spot Voice is listening." "Spot Voice hört zu.")"
 }
