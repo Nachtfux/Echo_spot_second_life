@@ -20,6 +20,7 @@ ACAV100M feature set).
 - `git` (Xcode Command Line Tools on macOS), `curl`, `patch` and [uv](https://docs.astral.sh/uv/)
   (`curl -LsSf https://astral.sh/uv/install.sh | sh`). uv installs Python 3.11 by itself.
 - **About 20 GB of free disk**: 9 GB of training data, 2 GB of tools, about 4 GB of generated clips per model.
+- **16 GB RAM or more.** Clips are generated in chunks of 1500 (`OWW_CLIP_CHUNK`), each in a fresh process: PyTorch's MPS backend caches a graph per input shape and never frees it, which let a single run grow to ~50 GB per model.
 - **About 1.5 to 2.5 hours** for a full run (the `--quick` smoke test takes roughly 30 to 45 minutes).
   About 10 GB is downloaded the first time. The Mac stays awake while training (`caffeinate`).
 - The repository path should be short (at most 93 characters for `training/`): espeak-ng, the phonemizer

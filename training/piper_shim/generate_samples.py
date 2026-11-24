@@ -11,8 +11,11 @@ This shim
   * always writes unique file names (Piper numbers files from 0 otherwise -> overwrites),
   * resamples the 22.05 kHz output to the 16 kHz openWakeWord expects.
 """
+import itertools
+import multiprocessing
 import os
 import sys
+import types
 import uuid
 import wave
 from math import gcd
@@ -40,6 +43,11 @@ if os.environ.get("OWW_WORDS_FILE"):
         GERMAN_WORDS = {str(w).lower() for w in _words}
 PASS_THROUGH = ("slerp_weights", "length_scales", "noise_scales", "noise_scale_ws", "max_speakers")
 MAX_BATCH = 32   # keeps Apple-GPU (MPS) memory in check
+# PyTorch's MPS backend caches a compiled graph per input shape and never frees it. Thousands of
+# different adversarial texts (= thousands of shapes) grew each training process to ~50 GB and
+# filled swap + disk on a 36 GB Mac. So clips are generated in chunks, each in a fresh process
+# whose memory goes back to the OS when it exits.
+CHUNK = int(os.environ.get("OWW_CLIP_CHUNK", "1500"))
 
 
 def _is_german(t: str) -> bool:
@@ -61,6 +69,23 @@ def _to_16k(path: str) -> None:
         w.setsampwidth(2)
         w.setframerate(16000)
         w.writeframes(y.tobytes())
+
+
+def _chunk_worker(texts, output_dir, model, n, file_names, batch_size, extra, chunk_index):
+    """Runs in a fresh process. Starts at a different first speaker per chunk so that chunking does
+    not shrink voice variety (Piper walks speaker pairs from speaker 0 on every call)."""
+    import piper_sample_generator.__main__ as psg
+
+    def product(*args):
+        if len(args) == 2 and all(isinstance(a, range) for a in args):
+            r = list(args[0])
+            s = (chunk_index * 37) % len(r)
+            return itertools.product(r[s:] + r[:s], args[1])
+        return itertools.product(*args)
+
+    psg.it = types.SimpleNamespace(cycle=itertools.cycle, islice=itertools.islice, product=product)
+    psg.generate_samples(text=texts, output_dir=output_dir, model=model, max_samples=n,
+                         file_names=file_names, batch_size=batch_size, **extra)
 
 
 def generate_samples(text, output_dir, max_samples=None, file_names=None, batch_size=1,
@@ -89,10 +114,20 @@ def generate_samples(text, output_dir, max_samples=None, file_names=None, batch_
             continue
         fn = names[done:done + n] if len(names) >= done + n else [uuid.uuid4().hex + ".wav" for _ in range(n)]
         print(f"[shim] {os.path.basename(m)}: {n} clips from {len(ts)} texts -> {output_dir}", flush=True)
-        _generate(text=ts, output_dir=output_dir, model=m, max_samples=n, file_names=fn,
-                  batch_size=max(1, min(int(batch_size), MAX_BATCH)), **extra)
+        bs = max(1, min(int(batch_size), MAX_BATCH))
+        ctx = multiprocessing.get_context("spawn")
+        for k, start in enumerate(range(0, n, CHUNK)):
+            cnt = min(CHUNK, n - start)
+            off = start % len(ts)          # continue the text rotation where the last chunk stopped
+            p = ctx.Process(target=_chunk_worker,
+                            args=(ts[off:] + ts[:off], str(output_dir), m, cnt, fn[start:start + cnt], bs, extra, k))
+            p.start()
+            p.join()
+            if p.exitcode != 0:
+                raise RuntimeError(f"clip generation chunk {k} failed (exit code {p.exitcode})")
+            for f in set(os.listdir(output_dir)) - before:      # resample this chunk's files right away
+                if f.endswith(".wav"):
+                    _to_16k(os.path.join(output_dir, f))
+            before = set(os.listdir(output_dir))
+            print(f"[shim] chunk {k + 1}: {start + cnt}/{n} clips", flush=True)
         done += n
-
-    for f in set(os.listdir(output_dir)) - before:
-        if f.endswith(".wav"):
-            _to_16k(os.path.join(output_dir, f))

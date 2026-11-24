@@ -32,6 +32,7 @@ the result.
 |---|---|
 | Computer | A Mac with Apple Silicon (tested on macOS 26). Linux should work but is untested. Windows is not supported. |
 | Free disk space | About **20 GB**: 9 GB of training data, 2 GB of tools, about 4 GB of generated clips per model. |
+| Memory | **16 GB RAM** or more. Speech clips are generated in chunks of 1500, each in its own process, because the Apple-GPU backend of PyTorch never frees memory for new sentence lengths (it grew to ~50 GB per model before this fix). Chunk size: `OWW_CLIP_CHUNK`. |
 | Download | About 10 GB the first time. Later runs reuse it. |
 | Time | A full run takes **1.5 to 2.5 hours**. The `--quick` smoke test takes 30 to 45 minutes. |
 | Tools | `git`, `curl`, `patch` and [uv](https://docs.astral.sh/uv/). uv installs the right Python (3.11) by itself. |

@@ -35,6 +35,7 @@ Alles in diesem Kapitel läuft auf deinem Computer. Den Spot brauchst du erst ga
 |---|---|
 | Computer | Ein Mac mit Apple Silicon (getestet mit macOS 26). Linux sollte gehen, ist aber ungetestet. Windows wird nicht unterstützt. |
 | Freier Speicher | Etwa **20 GB**: 9 GB Trainingsdaten, 2 GB Werkzeuge, etwa 4 GB erzeugte Clips pro Modell. |
+| Arbeitsspeicher | **16 GB RAM** oder mehr. Die Sprachclips entstehen in Portionen zu 1500, jede in einem eigenen Prozess, weil das Apple-GPU-Backend von PyTorch für jede neue Satzlänge Speicher belegt und nie freigibt (vor dieser Korrektur bis zu ~50 GB pro Modell). Portionsgröße: `OWW_CLIP_CHUNK`. |
 | Download | Beim ersten Mal etwa 10 GB. Spätere Läufe nutzen ihn wieder. |
 | Zeit | Ein voller Lauf dauert **1,5 bis 2,5 Stunden**, der Schnelltest mit `--quick` 30 bis 45 Minuten. |
 | Werkzeuge | `git`, `curl`, `patch` und [uv](https://docs.astral.sh/uv/). uv installiert das passende Python (3.11) selbst. |
