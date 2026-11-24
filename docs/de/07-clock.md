@@ -205,7 +205,7 @@ Uhrzeiten stehen in beiden Sprachen immer im 24-Stunden-Format da. Die Screensho
 
 ## Broadcasts, die die Uhr versteht
 
-Für Tests und Automatisierung von deinem Computer aus. Listet `adb devices` mehr als ein Gerät, schreib `-s 192.168.x.y:5555` direkt hinter `adb`.
+Für Tests und Automatisierung von deinem Computer aus. Zeigt `adb devices` nichts an, verbinde dich zuerst mit `adb connect 192.168.x.y:5555` (Adresse aus `./install.sh status`). Listet es mehr als ein Gerät, schreib `-s 192.168.x.y:5555` direkt hinter `adb`.
 
 | Aktion | Befehl | Wirkung |
 |---|---|---|
@@ -271,6 +271,7 @@ Die Phase `clock`:
 | Problem | Siehe |
 |---|---|
 | Das Wetter zeigt `—` / ORT FEHLT | [Wetter fehlt](09-troubleshooting.md#no-weather-on-the-clock) |
+| `Konnte das App-Release nicht von GitHub laden` | [Das App-Release lässt sich nicht laden](09-troubleshooting.md#the-app-release-cannot-be-downloaded) |
 | Kein Cover und kein Titel, während Musik läuft | [Musik-Anzeige erscheint nicht](09-troubleshooting.md#the-now-playing-face-does-not-appear) |
 | „Startbildschirm“ zeigt einen anderen Launcher, oder die Uhr kommt nicht zurück | [Uhr ist nicht der Startbildschirm](09-troubleshooting.md#the-clock-is-not-the-home-screen) |
 | Der Mittelpunkt bleibt grau | [Wake-Word wird nicht erkannt](09-troubleshooting.md#the-wake-word-does-not-react) |

@@ -35,8 +35,9 @@ It uses the partition names from TWRP for readable file names. A typical list:
 | `cache` | temporary files | no, not needed |
 | `userdata` | your personal Fire OS data, about 2 GB | only if you answer `y` (not needed to restore the Spot) |
 
-Before it copies anything, the installer prints the exact plan with every partition and the total size. On the
-tested Spot the backup was about 1.7 GB.
+Before it copies anything, the installer prints the exact plan with every partition and the total size. Without
+`userdata` expect a little over 1 GB (the example below shows 1095 MiB); with `userdata` about 2 GB more. The backup
+of the tested Spot was about 1.7 GB.
 
 ### Where it goes
 
@@ -97,17 +98,20 @@ The `backups/` folder is ignored by git, so it never ends up in a commit.
 You can check a backup at any time:
 
 ```bash
-cd backups/2026-11-23_101500 && shasum -a 256 -c MANIFEST.sha256
+(cd backups/2026-11-23_101500 && shasum -a 256 -c MANIFEST.sha256)
 ```
 
-Every line must end with `OK`. On Linux use `sha256sum -c MANIFEST.sha256`.
+Use the folder name of your own backup; the installer prints this exact line at the end of the backup. The
+brackets keep your terminal in the project folder. Every line must end with `OK`. On Linux use `sha256sum -c
+MANIFEST.sha256` instead of `shasum -a 256 -c MANIFEST.sha256`.
 
 ### Restoring, in short
 
 You hope you never need it, but it helps to know how it works: you start TWRP (Volume + while plugging in the
 power), copy the image files back to the Spot and write each one to its partition. Not every partition should be
-written back casually; the bootloader parts in particular need care. The exact commands are in
-[Troubleshooting: restore a backup](09-troubleshooting.md#restore-a-backup).
+written back casually; the bootloader parts in particular need care. Restoring is **not automated** by the installer
+and was not tested in this project. [Troubleshooting: restore a backup](09-troubleshooting.md#restore-a-backup)
+explains the safe order of steps and where to find the unbrick instructions.
 
 ## Part 2: Install LineageOS 18.1
 
@@ -227,6 +231,12 @@ Do not set anything up yet: the next chapter walks you through the wizard, and `
 - **LineageOS:** after a few minutes the Spot shows the LineageOS setup wizard.
 - `adb devices` does **not** list the Spot at this point. That is expected: USB debugging is off in a fresh
   LineageOS. You switch it on in [chapter 4](04-setup.md).
+
+> [!NOTE]
+> Trying the flash phase as a dry run on its own (`./install.sh --dry-run --yes flash`) ends with
+> `[xx] Phase "flash" did not complete.` That is the backup check at work: without a backup in `backups/` it asks
+> `Continue WITHOUT a backup?`, and `--yes` takes the default answer, No. A dry run that includes the backup phase
+> (`./install.sh --dry-run --yes backup flash`, or the full `./install.sh --dry-run --yes`) goes through.
 
 ## If something goes wrong
 

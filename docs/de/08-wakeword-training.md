@@ -404,7 +404,9 @@ adb shell am broadcast -a ai.pocket.heyclaude.SET_THRESHOLD -p ai.pocket.heyclau
 
 ### Mit dem Installer (empfohlen)
 
-1. Die Modelle nach `models/` im Repository kopieren. Bei den Wortdateien für Claude und ChatGPT passen die Namen schon:
+1. Die Modelle nach `models/` im Repository kopieren. Diese Befehle laufen im Repository-Ordner (bist du von der
+   Auswertung oben noch in `training/`, gehst du mit `cd ..` zurück). Bei den Wortdateien für Claude und ChatGPT
+   passen die Namen schon:
 
    ```bash
    cp training/out/models/claude/*.onnx models/

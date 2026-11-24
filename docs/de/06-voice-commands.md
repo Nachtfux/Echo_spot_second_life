@@ -272,15 +272,17 @@ Die Sprachbefehle richtet die Phase `voice` ein (Kapitel 5). Für die Befehle:
 2. Prüft er die SHA-256-Prüfsumme, entpackt das Modell und kopiert den Ordner als `vosk-de` oder `vosk-en` auf den Spot (etwa 50 MB). Liegt das Modell schon dort, überspringt er diesen Schritt. `--force` kopiert es neu.
 3. Schickt er `SET_LANG`, damit Spot Voice das Modell lädt.
 
-Spotify installiert die Phase `apps`, wenn du Ja gesagt hast (oder mit `--spotify`). Der Probelauf zeigt die Vosk-Schritte:
+Spotify installiert die Phase `apps`, wenn du Ja gesagt hast (oder mit `--spotify`). Der Probelauf zeigt die Vosk-Schritte (`…` steht für den Projektordner, den der Installer vollständig ausgibt):
 
 ```text
 ==> Offline-Sprachmodell für Sprachbefehle (Vosk, de)
 [..] Lade vosk-model-small-de-0.15.zip ...
 + curl -fL --retry 3 -o downloads/vosk-model-small-de-0.15.zip https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip
 + shasum -a 256 downloads/vosk-model-small-de-0.15.zip
++ unzip -q -o …/downloads/vosk-model-small-de-0.15.zip -d …/downloads
 [..] Kopiere das Modell auf den Spot (ca. 50 MB) ...
 + adb shell rm -rf /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-de
++ adb push …/downloads/vosk-model-small-de-0.15 /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-de
 [ok] downloads/vosk-model-small-de-0.15/ -> /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-de/
 ```
 

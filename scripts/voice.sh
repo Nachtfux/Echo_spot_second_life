@@ -75,8 +75,8 @@ _voice_a11y() {
   fi
   adb_sh am start -a android.settings.ACCESSIBILITY_SETTINGS >/dev/null
   msg "The accessibility settings are open on the Spot:" "Auf dem Spot sind die Bedienungshilfe-Einstellungen offen:"
-  howto "$(L "Tap \"Spot Voice\" (under downloaded apps/services)." "Auf \"Spot Voice\" tippen (unter heruntergeladene Apps/Dienste).")" \
-        "$(L "Switch on \"Use Spot Voice\" and confirm with \"Allow\"." "\"Spot Voice verwenden\" einschalten und mit \"Zulassen\" bestätigen.")"
+  howto "$(L "Tap \"Spot Voice Auto-Tap\" (under downloaded apps/services)." "Auf \"Spot Voice Auto-Tap\" tippen (unter heruntergeladene Apps/Dienste).")" \
+        "$(L "Switch on \"Use Spot Voice Auto-Tap\" and confirm with \"Allow\"." "\"Spot Voice Auto-Tap verwenden\" einschalten und mit \"Zulassen\" bestätigen.")"
   if wait_setting secure enabled_accessibility_services "$A11Y_COMPONENT" 300; then
     ok "$(L "Accessibility service enabled" "Bedienungshilfe aktiviert")"
   else

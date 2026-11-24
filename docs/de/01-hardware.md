@@ -126,11 +126,17 @@ Optionale Werkzeuge: `doctor` meldet sie, setzt sie aber nicht voraus.
 | Werkzeug | Was es bringt | macOS |
 |---|---|---|
 | `gtimeout` / `timeout` | Zeitlimits für Befehle (der Installer hat einen eigenen Ersatz) | `brew install coreutils` |
-| `apksigner` | prüft das Signaturzertifikat von Aurora Store und wird für einen Notweg bei der Installation in [Kapitel 5](05-voice-assistant.md) gebraucht | Teil der build-tools des Android SDK |
+| `apksigner` | prüft das Signaturzertifikat von Aurora Store und wird für einen Notweg bei der Installation in [Kapitel 5](05-voice-assistant.md) gebraucht | Teil der build-tools des Android SDK, siehe [Aurora-Installation hängt](09-troubleshooting.md#aurora-install-hangs) |
 | `scrcpy` | zeigt das Display des Spot auf deinem Computer, mit echter Tastatur für Anmeldungen | `brew install scrcpy` |
 
 Für die `brew`-Befehle brauchst du unter macOS [Homebrew](https://brew.sh). Installier es zuerst, falls du es noch
-nicht hast.
+nicht hast:
+
+1. Öffne das **Terminal** (Programme → Dienstprogramme → Terminal). Alle Befehle in dieser Anleitung tippst du dort ein.
+2. Kopier den Installationsbefehl von [brew.sh](https://brew.sh), füg ihn ins Terminal ein und drück Enter. Er fragt
+   nach dem Passwort deines Mac.
+3. Am Ende zeigt Homebrew **„Next steps“** mit ein oder zwei Befehlen, die `brew` in deinen Suchpfad eintragen. Führ
+   sie aus und prüf dann mit `brew --version`.
 
 Meldet `adb` unter Linux später „no permissions“, installier die udev-Regeln für Android-Geräte (zum Beispiel
 `sudo apt install android-sdk-platform-tools-common`) und steck das Kabel neu ein.
@@ -138,9 +144,15 @@ Meldet `adb` unter Linux später „no permissions“, installier die udev-Regel
 ### Das Projekt holen
 
 ```bash
+cd ~
 git clone https://github.com/Nachtfux/Echo_spot_second_life.git
 cd Echo_spot_second_life
 ```
+
+Auf einem Mac ohne Entwicklerwerkzeuge öffnet der erste `git`-Befehl ein Fenster, das die Installation der Command
+Line Tools anbietet. Klick auf **Installieren**, warte, bis es fertig ist, und starte `git clone` noch einmal.
+`cd ~` legt das Projekt in deinen Benutzerordner: Ein kurzer Pfad ist für [Kapitel 8](08-wakeword-training.md)
+wichtig, und alle weiteren Befehle dieser Anleitung tippst du im Ordner `Echo_spot_second_life` ein.
 
 ### Die Prüfung starten
 
@@ -154,6 +166,8 @@ installierst. Auf einem Mac ohne `adb` fragt er:
 ```
 ?? adb + fastboot jetzt installieren (brew install android-platform-tools)? [J/n]
 ```
+
+Drück Enter, um anzunehmen. Ohne Homebrew zeigt er stattdessen `Zuerst Homebrew installieren (https://brew.sh), dann: brew install android-platform-tools`.
 
 ## Was der Installer für dich erledigt
 
@@ -190,6 +204,7 @@ Ein typischer Lauf auf einem Mac sieht so aus (gekürzt):
 ==> Benötigte Werkzeuge
 [ok] adb: /opt/homebrew/bin/adb
 [ok] fastboot: /opt/homebrew/bin/fastboot
+     Android Debug Bridge version 1.0.41
 [ok] curl: /usr/bin/curl
 [ok] unzip: /usr/bin/unzip
 [ok] python3: /usr/bin/python3

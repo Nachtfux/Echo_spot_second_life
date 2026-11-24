@@ -150,7 +150,7 @@ _clock_listener() {
   fi
   adb_sh am start -a android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS >/dev/null
   msg "The notification access settings are open on the Spot:" "Auf dem Spot sind die Einstellungen für Benachrichtigungszugriff offen:"
-  howto "$(L "Tap \"Spot Clock\"." "Auf \"Spot Clock\" tippen.")" \
+  howto "$(L "Tap \"Spot Clock\"." "Auf \"Spot-Uhr\" tippen.")" \
         "$(L "Switch on \"Allow notification access\" and confirm with \"Allow\"." \
              "\"Benachrichtigungszugriff erlauben\" einschalten und mit \"Zulassen\" bestätigen.")"
   if wait_setting secure enabled_notification_listeners "$LISTENER_COMPONENT" 300; then

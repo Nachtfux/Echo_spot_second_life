@@ -119,10 +119,16 @@ Optional tools, which `doctor` reports but does not require:
 | Tool | What it adds | macOS |
 |---|---|---|
 | `gtimeout` / `timeout` | time limits for commands (the installer has its own fallback) | `brew install coreutils` |
-| `apksigner` | checks the signing certificate of Aurora Store, and is needed for an install fallback in [chapter 5](05-voice-assistant.md) | part of the Android SDK build-tools |
+| `apksigner` | checks the signing certificate of Aurora Store, and is needed for an install fallback in [chapter 5](05-voice-assistant.md) | part of the Android SDK build-tools, see [Aurora install hangs](09-troubleshooting.md#aurora-install-hangs) |
 | `scrcpy` | shows the Spot's screen on your computer, with a real keyboard for logins | `brew install scrcpy` |
 
-On macOS you need [Homebrew](https://brew.sh) for the `brew` commands. Install it first if you do not have it.
+On macOS you need [Homebrew](https://brew.sh) for the `brew` commands. Install it first if you do not have it:
+
+1. Open **Terminal** (Applications → Utilities → Terminal). All commands in this guide are typed there.
+2. Copy the install command from [brew.sh](https://brew.sh), paste it into Terminal and press Enter. It asks for
+   your Mac password.
+3. At the end Homebrew prints **"Next steps"** with one or two commands that add `brew` to your path. Run them,
+   then check with `brew --version`.
 
 On Linux, if `adb` later says "no permissions", install the udev rules for Android devices (for example
 `sudo apt install android-sdk-platform-tools-common`) and plug the cable in again.
@@ -130,9 +136,15 @@ On Linux, if `adb` later says "no permissions", install the udev rules for Andro
 ### Get the project
 
 ```bash
+cd ~
 git clone https://github.com/Nachtfux/Echo_spot_second_life.git
 cd Echo_spot_second_life
 ```
+
+On a Mac without developer tools, the first `git` command opens a window that offers to install the Command Line
+Tools. Click **Install**, wait until it is done and run `git clone` again. `cd ~` puts the project in your home
+folder: a short path matters for [chapter 8](08-wakeword-training.md), and every later command in this guide is
+typed in the `Echo_spot_second_life` folder.
 
 ### Run the check
 
@@ -146,6 +158,8 @@ On a Mac without `adb` it asks:
 ```
 ?? Install adb + fastboot now (brew install android-platform-tools)? [Y/n]
 ```
+
+Press Enter to accept. Without Homebrew it prints `Install Homebrew first (https://brew.sh), then: brew install android-platform-tools` instead.
 
 ## What the installer does for you
 
@@ -181,6 +195,7 @@ A typical run on a Mac looks like this (shortened):
 ==> Required tools
 [ok] adb: /opt/homebrew/bin/adb
 [ok] fastboot: /opt/homebrew/bin/fastboot
+     Android Debug Bridge version 1.0.41
 [ok] curl: /usr/bin/curl
 [ok] unzip: /usr/bin/unzip
 [ok] python3: /usr/bin/python3

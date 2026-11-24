@@ -188,7 +188,10 @@ Replace `192.168.x.y` with the address that `./install.sh status` shows under "D
    adb devices -l
    ```
 
-   lists the Spot with its Wi-Fi address and the state `device`.
+   lists the Spot with its Wi-Fi address and the state `device`. While the USB cable is still plugged in, the same
+   Spot shows up a second time with its serial number. Unplug the USB cable now (keep the power supply in), so that
+   your own `adb` commands in later chapters do not stop with `adb: more than one device/emulator`. See
+   [More than one device](09-troubleshooting.md#more-than-one-device).
 3. On the Spot: the menus are in your language, everything looks smaller, and **Aurora Store** is in the app list.
 4. Settings → Security → Screen lock shows **None**.
 

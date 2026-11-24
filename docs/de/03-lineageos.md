@@ -36,8 +36,9 @@ Speichers (`mmcblk0p…`) und dazu die beiden versteckten Boot-Bereiche des Chip
 | `cache` | temporäre Dateien | nein, nicht nötig |
 | `userdata` | deine persönlichen Daten aus Fire OS, etwa 2 GB | nur wenn du mit `j` antwortest (zum Wiederherstellen des Spot nicht nötig) |
 
-Bevor er etwas kopiert, zeigt der Installer den genauen Plan mit allen Partitionen und der Gesamtgröße. Auf dem
-getesteten Spot war die Sicherung etwa 1,7 GB groß.
+Bevor er etwas kopiert, zeigt der Installer den genauen Plan mit allen Partitionen und der Gesamtgröße. Ohne
+`userdata` rechne mit gut 1 GB (das Beispiel unten zeigt 1095 MiB), mit `userdata` mit etwa 2 GB mehr. Die Sicherung
+des getesteten Spot war etwa 1,7 GB groß.
 
 ### Wohin sie kommt
 
@@ -98,17 +99,21 @@ Git ignoriert den Ordner `backups/`. Er landet also nie in einem Commit.
 Eine Sicherung kannst du jederzeit prüfen:
 
 ```bash
-cd backups/2026-11-23_101500 && shasum -a 256 -c MANIFEST.sha256
+(cd backups/2026-11-23_101500 && shasum -a 256 -c MANIFEST.sha256)
 ```
 
-Jede Zeile muss mit `OK` enden. Unter Linux nimmst du `sha256sum -c MANIFEST.sha256`.
+Nimm den Ordnernamen deiner eigenen Sicherung; der Installer zeigt genau diese Zeile am Ende der Sicherung an. Die
+Klammern sorgen dafür, dass dein Terminal im Projektordner bleibt. Jede Zeile muss mit `OK` enden. Unter Linux nimmst
+du `sha256sum -c MANIFEST.sha256` statt `shasum -a 256 -c MANIFEST.sha256`.
 
 ### Wiederherstellen, kurz erklärt
 
 Hoffentlich brauchst du es nie, aber es hilft zu wissen, wie es geht: Du startest TWRP (Lauter gedrückt halten und
 das Netzteil einstecken), kopierst die Image-Dateien zurück auf den Spot und schreibst jede in ihre Partition. Nicht
-jede Partition sollte man leichtfertig zurückschreiben; vor allem die Teile des Bootloaders brauchen Sorgfalt. Die
-genauen Befehle stehen in [Fehlerbehebung: Sicherung wiederherstellen](09-troubleshooting.md#restore-a-backup).
+jede Partition sollte man leichtfertig zurückschreiben; vor allem die Teile des Bootloaders brauchen Sorgfalt. Der
+Installer stellt **nicht automatisch** wieder her, und in diesem Projekt wurde das Wiederherstellen nicht getestet.
+[Fehlerbehebung: Sicherung wiederherstellen](09-troubleshooting.md#restore-a-backup) erklärt die sichere Reihenfolge
+und wo du die Anleitung zum Retten (Unbrick) findest.
 
 ## Teil 2: LineageOS 18.1 installieren
 
@@ -234,6 +239,12 @@ dich.
 - **LineageOS:** Nach ein paar Minuten zeigt der Spot den Einrichtungsassistenten von LineageOS.
 - `adb devices` listet den Spot jetzt **nicht** auf. Das ist so gewollt: In einem frischen LineageOS ist
   USB-Debugging aus. Du schaltest es in [Kapitel 4](04-setup.md) ein.
+
+> [!NOTE]
+> Probierst du die Phase `flash` allein als Probelauf aus (`./install.sh --dry-run --yes flash`), endet sie mit
+> `[xx] Phase "flash" wurde nicht abgeschlossen.` Das ist die Sicherungsprüfung: Ohne Sicherung in `backups/` fragt sie
+> `OHNE Sicherung weitermachen?`, und `--yes` nimmt die Standardantwort, Nein. Ein Probelauf mit der Phase `backup`
+> (`./install.sh --dry-run --yes backup flash` oder der ganze `./install.sh --dry-run --yes`) läuft durch.
 
 ## Wenn etwas schiefgeht
 

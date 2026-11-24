@@ -50,7 +50,7 @@ The installer opens the app's page in **Aurora Store**, an open-source client fo
    ```
 
    To choose ChatGPT, add `--assistant chatgpt`. Without the option the installer asks you on the first run, and the default is Claude.
-2. The first time, the installer asks: `Also install Spotify (for voice commands like "play ..."; needs a Spotify account)? [y/N]`. Answer `y` if you want music by voice (chapter 6). You can add it later with `./install.sh apps --spotify`.
+2. The first time, the installer asks: `Also install Spotify (for voice commands like "play ..."; needs a Spotify account)? [y/N]`. Answer `y` if you want music by voice (chapter 6). You can add it later with `./install.sh apps --spotify`. That run shows the login steps of your assistant again. If you are already logged in, just press Enter at `Press Enter when you are logged in ...` (with Claude, first answer `n` to `Paste the login link now?`).
 3. Look at the Spot. Aurora Store opens on the app's page. If this is your first time in Aurora, go through its welcome screens and choose the **"Anonymous"** login.
 4. Tap **"Install"**, then confirm the Android dialog with **"Install"**.
 5. Wait. The installer notices the finished installation by itself (it waits up to 10 minutes) and prints `[ok] Claude installed`.
@@ -59,7 +59,7 @@ The installer opens the app's page in **Aurora Store**, an open-source client fo
 > [!TIP]
 > If Aurora does not show the app by itself after its welcome screens, just run `./install.sh apps` again.
 
-**If Aurora's installer hangs.** On this ROM, Aurora's install confirmation sometimes never finishes. The installer then offers a verified fallback. It copies the files Aurora has already downloaded from the Spot, checks with `apksigner` that every part (split APK) has the same valid signature, and installs them with `adb install-multiple`. This fallback needs "Rooted debugging" (chapter 4) and `apksigner` from the Android SDK build-tools on your computer. The installer tells you if one of them is missing.
+**If Aurora's installer hangs.** On this ROM, Aurora's install confirmation sometimes never finishes. The installer then offers a verified fallback. It copies the files Aurora has already downloaded from the Spot, checks with `apksigner` that every part (split APK) has the same valid signature, and installs them with `adb install-multiple`. This fallback needs "Rooted debugging" (chapter 4) and `apksigner` from the Android SDK build-tools on your computer. The installer tells you if one of them is missing. How to get `apksigner`: [Aurora install hangs](09-troubleshooting.md#aurora-install-hangs).
 
 ## Step 2 · Log in
 
@@ -69,7 +69,7 @@ At the end of the `apps` phase the installer opens the assistant app on the Spot
 
 Claude logs you in with a link sent by e-mail. That link must be opened **on the Spot**, the device you log in on. Typing a long link on the small round screen is not practical, so the installer passes it over for you.
 
-1. On the Spot, choose to continue with e-mail and type your e-mail address.
+1. On the Spot, choose to continue with e-mail and type your e-mail address. (Typing is easier with `scrcpy`, see the tip below.)
 2. On your computer, open the e-mail from Anthropic. Right-click the sign-in button and copy the link.
 3. The installer asks `Paste the login link now? [Y/n]`. Press Enter. If you want to do it later, run:
 
@@ -429,7 +429,7 @@ The reason in brackets shows what ended the conversation: `wake word` (the wake 
 
 ## Useful adb commands
 
-For tests and tuning from your computer. If `adb devices` lists more than one device, add `-s 192.168.x.y:5555` after `adb`. Broadcasts reach Spot Voice only while its listening service runs. The exceptions are `SET_ASSISTANT` and `SET_LANG`, which are saved even when it is stopped, and `DUMP_NODES`, which the accessibility service handles.
+For tests and tuning from your computer. First check that `adb` sees the Spot: `adb devices`. If the list is empty (for example after your computer restarted), connect with `adb connect 192.168.x.y:5555`, using the address that `./install.sh status` shows under "Device". If it lists more than one device, add `-s 192.168.x.y:5555` after `adb`. Broadcasts reach Spot Voice only while its listening service runs. The exceptions are `SET_ASSISTANT` and `SET_LANG`, which are saved even when it is stopped, and `DUMP_NODES`, which the accessibility service handles.
 
 | What | Command | Effect |
 |---|---|---|
@@ -474,6 +474,7 @@ When the auto-tap fails, the log also shows `A11y: try 1/8: no node matches …`
 | Symptom | See |
 |---|---|
 | Aurora's install never finishes | [Aurora Store hangs while installing](09-troubleshooting.md#aurora-store-hangs-while-installing) |
+| `Could not download the app release from GitHub` | [The app release cannot be downloaded](09-troubleshooting.md#the-app-release-cannot-be-downloaded) |
 | The login link does nothing on the Spot | [The login link does not open](09-troubleshooting.md#the-login-link-does-not-open) |
 | `adb` cannot reach the Spot after a reboot | [adb over Wi-Fi is gone after a reboot](09-troubleshooting.md#adb-over-wi-fi-is-gone-after-a-reboot) |
 | Saying the wake word does nothing | [The wake word does not react](09-troubleshooting.md#the-wake-word-does-not-react) |

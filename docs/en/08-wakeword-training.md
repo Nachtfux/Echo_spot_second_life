@@ -371,7 +371,9 @@ adb shell am broadcast -a ai.pocket.heyclaude.SET_THRESHOLD -p ai.pocket.heyclau
 
 ### With the installer (recommended)
 
-1. Copy the models into `models/` in the repository. For the Claude or ChatGPT word sets the names already fit:
+1. Copy the models into `models/` in the repository. Run these commands in the repository folder (if you are still
+   in `training/` from the evaluation above, go back with `cd ..`). For the Claude or ChatGPT word sets the names
+   already fit:
 
    ```bash
    cp training/out/models/claude/*.onnx models/

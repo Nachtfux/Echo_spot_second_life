@@ -56,7 +56,13 @@ The download is attached to a post in the XDA forum and needs a free XDA account
    [[UNLOCK][ROOT][TWRP][UNBRICK] Amazon Echo Spot 2017 (rook)](https://xdaforums.com/t/unlock-root-twrp-unbrick-amazon-echo-spot-2017-rook.4754878/)
 2. Log in to XDA (or create a free account). Attachments can only be downloaded when you are logged in.
 3. In the first post, download the attachment **`amonet-rook-v2.0.0.zip`**.
-4. Put the zip, **not unpacked**, into the `downloads/` folder of the project:
+
+   Safari unpacks zip files by itself ("Open safe files after downloading"), and then you only find a folder
+   `amonet-rook-v2.0.0` in `Downloads`. The installer needs the zip. Switch that option off in Safari → Settings →
+   General and download again, or use another browser.
+
+4. Put the zip, **not unpacked**, into the `downloads/` folder of the project. In the terminal, in the
+   `Echo_spot_second_life` folder:
 
    ```bash
    mkdir -p downloads

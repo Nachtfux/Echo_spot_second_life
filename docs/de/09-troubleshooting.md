@@ -15,7 +15,7 @@ findest du die FAQ, wie du eine Sicherung zurückspielst und wie du alles wieder
 | [Entsperren](#entsperren) | [fastboot sieht den Spot nicht](#fastboot-sieht-den-spot-nicht) · [Die Sicherheitsprüfungen stoppen das Entsperren](#die-sicherheitsprüfungen-stoppen-das-entsperren) · [Timeout beim Exploit](#timeout-beim-exploit) · [TWRP erscheint nicht](#twrp-erscheint-nicht) |
 | [Sicherung und LineageOS](#sicherung-und-lineageos) | [sha256 stimmt nicht](#sha256-stimmt-nicht) · [TWRP wird nicht gefunden](#twrp-wird-nicht-gefunden) · [Bootschleife beim ersten Start](#bootschleife-beim-ersten-start) |
 | [Android einrichten](#android-einrichten) | [adb meldet unauthorized](#adb-meldet-unauthorized) · [Debugging als Root ist aus](#debugging-als-root-ist-aus) · [adb per WLAN nach einem Neustart weg](#adb-per-wlan-nach-einem-neustart-weg) · [Mehr als ein Gerät](#mehr-als-ein-gerät) |
-| [Apps und Anmeldung](#apps-und-anmeldung) | [Aurora-Installation hängt](#aurora-installation-hängt) · [Probleme bei der Anmeldung](#probleme-bei-der-anmeldung) |
+| [Apps und Anmeldung](#apps-und-anmeldung) | [Aurora-Installation hängt](#aurora-installation-hängt) · [Probleme bei der Anmeldung](#probleme-bei-der-anmeldung) · [Das App-Release lässt sich nicht laden](#das-app-release-lässt-sich-nicht-laden) |
 | [Sprachassistent](#sprachassistent) | [Android hat die Bedienungshilfe abgeschaltet](#android-hat-die-bedienungshilfe-abgeschaltet) · [Sprachmodus-Button wird nicht gefunden](#sprachmodus-button-wird-nicht-gefunden) · [Der Spot wacht von selbst auf](#der-spot-wacht-von-selbst-auf) · [Wake-Word wird nicht erkannt](#wake-word-wird-nicht-erkannt) · [Der Spot piept, aber nichts öffnet sich](#der-spot-piept-aber-nichts-öffnet-sich) · [Der Assistent unterbricht sich selbst](#der-assistent-unterbricht-sich-selbst) · [Das Gespräch endet nicht](#das-gespräch-endet-nicht) · [Spot Voice hört nicht mehr zu](#spot-voice-hört-nicht-mehr-zu) |
 | [Sprachbefehle](#sprachbefehle) | [Sprachbefehle werden falsch verstanden](#sprachbefehle-werden-falsch-verstanden) · [Radiosender wird nicht gefunden](#radiosender-wird-nicht-gefunden) · [Spotify spielt nicht](#spotify-spielt-nicht) |
 | [Die Uhr](#die-uhr) | [Kein Wetter](#kein-wetter) · [Nach dem Aufwachen fehlt die Uhr](#nach-dem-aufwachen-fehlt-die-uhr) · [Die Musik-Anzeige erscheint nicht](#die-musik-anzeige-erscheint-nicht) |
@@ -62,7 +62,9 @@ Die Logzeilen sind englisch.
    adb logcat -d -s HeyClaude OpenWakeWord SpotClock > spot-log.txt
    ```
 
-Über WLAN setzt du `-s 192.168.x.y:5555` direkt hinter `adb`.
+Diese Befehle sprechen über `adb` mit dem Spot. Zeigt `adb devices` nichts an, verbinde dich zuerst mit
+`adb connect 192.168.x.y:5555` (die Adresse zeigt `./install.sh status` unter „Gerät“). Steht der Spot dort zweimal
+(über USB und über WLAN), setz `-s 192.168.x.y:5555` direkt hinter `adb`, siehe [Mehr als ein Gerät](#mehr-als-ein-gerät).
 
 Nützliche Zeilen:
 
@@ -378,6 +380,15 @@ adb connect 192.168.x.y:5555
 Meldung: `Mehr als ein Android-Gerät ist verbunden.` Steck die anderen ab oder wähl den Spot mit
 `--device <seriennummer>` (USB) oder `--device 192.168.x.y:5555` (WLAN). `adb devices -l` zeigt, was verbunden ist.
 
+Das passiert auch mit **einem** Spot: Nach der Phase `setup` kann er doppelt verbunden sein, über USB und über WLAN.
+`adb devices` zeigt dann zwei Zeilen, eine Seriennummer mit `device` und `192.168.x.y:5555` mit `device`. Deine eigenen
+`adb shell …`-Befehle brechen dann mit `adb: more than one device/emulator` ab, und Phasen, die über USB beginnen (etwa
+`setup`), warten mit der Meldung oben. Eins davon hilft:
+
+1. Zieh das USB-Kabel ab (das Netzteil bleibt drin). Alles nach `setup` läuft über WLAN.
+2. Oder trenn die WLAN-Verbindung vorerst: `adb disconnect 192.168.x.y:5555`.
+3. Oder nenn das Gerät in deinen eigenen Befehlen: `adb -s 192.168.x.y:5555 shell …`.
+
 <a id="apps-and-login"></a>
 
 ## Apps und Anmeldung
@@ -396,11 +407,35 @@ die App und bietet dann einen Notweg an: Er nimmt die Dateien, die Aurora schon 
 | Meldung | Was du tun kannst |
 |---|---|
 | `Aurora hat <pkg> noch nicht heruntergeladen.` | In Aurora „Installieren“ tippen, warten, bis der Download fertig ist, dann `./install.sh apps` noch einmal starten. |
-| `Der Notweg braucht apksigner (Android SDK build-tools)` | Die build-tools installieren: mit dem SDK Manager von Android Studio, oder mit `brew install --cask android-commandlinetools` und danach `sdkmanager "build-tools;36.0.0"`. Liegt das SDK nicht am Standardort, setz `ANDROID_HOME`. |
+| `Der Notweg braucht apksigner (Android SDK build-tools)` | `apksigner` wie unten beschrieben installieren, dann `./install.sh apps` noch einmal starten. |
 | `Kein armeabi-v7a-Split gefunden` | Diese App-Version läuft evtl. nicht auf dem Spot (32-Bit-ARM). Versuch es später noch einmal, eine neuere Version hat ihn vielleicht. |
 | `Die Split-APKs haben nicht alle dieselbe gültige Signatur - keine Installation.` | Den Dateien ist nicht zu trauen, deshalb wurde nichts installiert. Versuch es später noch einmal; passiert es wieder, frag nach Hilfe. |
 
 Zum ersten Mal in Aurora: Geh durch die Startbildschirme und wähl den **„Anonym“**-Login. Ein Google-Konto brauchst du nicht.
+
+**So kommst du an `apksigner`.** Der Installer sucht `apksigner` in deinem Suchpfad oder im neuesten Ordner
+`build-tools/<version>/` eines Android SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT`, `~/Library/Android/sdk` (macOS) oder
+`~/Android/Sdk` (Linux). Dieser SDK-Ordner muss auch einen Ordner `platforms/` enthalten. `apksigner` ist ein
+Java-Programm, du brauchst also auch JDK 17 oder neuer. Zwei Wege auf dem Mac (keiner wurde für diese Anleitung auf
+einem frischen Mac ausprobiert):
+
+1. **Mit Android Studio** (am einfachsten): [Android Studio](https://developer.android.com/studio) installieren,
+   einmal starten und den Einrichtungsassistenten das SDK laden lassen. Es landet in `~/Library/Android/sdk`, mit
+   build-tools und einer Plattform. Dann Java installieren: `brew install openjdk@17`.
+2. **Ohne Android Studio**, alles in einem Terminal-Fenster:
+
+   ```bash
+   brew install openjdk@17
+   brew install --cask android-commandlinetools
+   export JAVA_HOME="$(brew --prefix openjdk@17)"
+   export ANDROID_HOME="$(brew --prefix)/share/android-commandlinetools"
+   sdkmanager "build-tools;36.0.0" "platforms;android-30"
+   ./install.sh apps
+   ```
+
+   `ANDROID_HOME` gilt nur für dieses Terminal-Fenster. In einem neuen Fenster setzt du es vor dem Installer noch einmal.
+
+`./install.sh doctor` zeigt `[ok] apksigner: …`, sobald er gefunden wird.
 
 <a id="login-problems"></a><a id="the-login-link-does-not-open"></a>
 
@@ -434,6 +469,30 @@ scrcpy                          # über WLAN: scrcpy -s 192.168.x.y:5555
 ```
 
 **Mikrofon:** Fragt die Assistenten-App nach dem Mikrofon, erlaube es. Die Phase `apps` kann es dir auch gleich freigeben.
+
+<a id="the-app-release-cannot-be-downloaded"></a>
+
+### Das App-Release lässt sich nicht laden
+
+Die Phasen `voice` und `clock` laden `spot-voice.apk`, `spot-clock.apk` und `SHA256SUMS` aus dem neuesten
+[GitHub-Release](https://github.com/Nachtfux/Echo_spot_second_life/releases) dieses Projekts. Klappt das nicht,
+hält der Installer an mit:
+
+```
+[xx] Konnte das App-Release nicht von GitHub laden: https://github.com/Nachtfux/Echo_spot_second_life/releases/latest/download
+     Kein Internet oder noch kein Release veröffentlicht. Die Apps lassen sich selbst bauen: --from-source anhängen
+```
+
+1. Prüf die Internetverbindung deines Computers und starte dieselbe Phase noch einmal.
+2. Öffne die Release-Seite im Browser. Steht dort noch kein Release, bau die Apps selbst. Das braucht JDK 17 und das
+   Android SDK; `./install.sh build` sagt dir, was fehlt und wie du es bekommst:
+
+   ```bash
+   ./install.sh voice clock --from-source
+   ```
+
+3. Hast du die Apps schon einmal gebaut (`dist/spot-voice.apk`), bietet der Installer an, sie zu nehmen:
+   `Stattdessen das lokal gebaute dist/spot-voice.apk nehmen? [J/n]`.
 
 <a id="voice-assistant"></a>
 

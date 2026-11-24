@@ -202,7 +202,10 @@ Ersetze `192.168.x.y` durch die Adresse, die `./install.sh status` unter „Ger�
    adb devices -l
    ```
 
-   listet den Spot mit seiner WLAN-Adresse und dem Status `device` auf.
+   listet den Spot mit seiner WLAN-Adresse und dem Status `device` auf. Solange das USB-Kabel noch steckt, taucht
+   derselbe Spot ein zweites Mal mit seiner Seriennummer auf. Zieh das USB-Kabel jetzt ab (das Netzteil bleibt drin),
+   damit deine eigenen `adb`-Befehle in den späteren Kapiteln nicht mit `adb: more than one device/emulator`
+   abbrechen. Siehe [Mehr als ein Gerät](09-troubleshooting.md#more-than-one-device).
 3. Auf dem Spot: Die Menüs sind in deiner Sprache, alles wirkt kleiner, und **Aurora Store** steht in der App-Liste.
 4. Einstellungen → Sicherheit → Displaysperre zeigt **Keine**.
 

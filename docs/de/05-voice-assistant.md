@@ -50,7 +50,7 @@ Der Installer öffnet die Seite der App im **Aurora Store**. Das ist ein quellof
    ```
 
    Für ChatGPT hängst du `--assistant chatgpt` an. Ohne diese Option fragt der Installer beim ersten Lauf nach. Standard ist Claude.
-2. Beim ersten Mal fragt der Installer: `Auch Spotify installieren (für Sprachbefehle wie "spiele ..."; braucht ein Spotify-Konto)? [j/N]`. Antworte `j`, wenn du Musik per Stimme steuern willst (Kapitel 6). Nachholen kannst du das mit `./install.sh apps --spotify`.
+2. Beim ersten Mal fragt der Installer: `Auch Spotify installieren (für Sprachbefehle wie "spiele ..."; braucht ein Spotify-Konto)? [j/N]`. Antworte `j`, wenn du Musik per Stimme steuern willst (Kapitel 6). Nachholen kannst du das mit `./install.sh apps --spotify`. Dieser Lauf zeigt die Anmeldeschritte deines Assistenten noch einmal. Bist du schon angemeldet, drück einfach Enter bei `Enter drücken, wenn du angemeldet bist ...` (bei Claude vorher `Login-Link jetzt einfügen?` mit `n` beantworten).
 3. Schau auf den Spot. Aurora Store öffnet die Seite der App. Bist du zum ersten Mal in Aurora, geh durch die Willkommensseiten und wähle den Login **„Anonym“**.
 4. Tippe auf **„Installieren“** und bestätige den Android-Dialog mit **„Installieren“**.
 5. Warte. Der Installer merkt selbst, wann die Installation fertig ist (er wartet bis zu 10 Minuten), und meldet `[ok] Claude installiert`.
@@ -59,7 +59,7 @@ Der Installer öffnet die Seite der App im **Aurora Store**. Das ist ein quellof
 > [!TIP]
 > Zeigt Aurora die App nach den Willkommensseiten nicht von selbst an, starte einfach noch einmal `./install.sh apps`.
 
-**Wenn der Installer von Aurora hängt.** Auf diesem ROM wird die Installationsbestätigung von Aurora manchmal nie fertig. Der Installer bietet dann einen geprüften Notweg an. Er holt die Dateien, die Aurora schon heruntergeladen hat, vom Spot, prüft mit `apksigner`, dass jeder Teil (Split-APK) dieselbe gültige Signatur hat, und installiert sie mit `adb install-multiple`. Dieser Notweg braucht „Debugging als Root“ (Kapitel 4) und `apksigner` aus den Build-Tools des Android SDK auf deinem Computer. Fehlt eins davon, sagt dir der Installer Bescheid.
+**Wenn der Installer von Aurora hängt.** Auf diesem ROM wird die Installationsbestätigung von Aurora manchmal nie fertig. Der Installer bietet dann einen geprüften Notweg an. Er holt die Dateien, die Aurora schon heruntergeladen hat, vom Spot, prüft mit `apksigner`, dass jeder Teil (Split-APK) dieselbe gültige Signatur hat, und installiert sie mit `adb install-multiple`. Dieser Notweg braucht „Debugging als Root“ (Kapitel 4) und `apksigner` aus den Build-Tools des Android SDK auf deinem Computer. Fehlt eins davon, sagt dir der Installer Bescheid. So bekommst du `apksigner`: [Aurora-Installation hängt](09-troubleshooting.md#aurora-install-hangs).
 
 ## Schritt 2 · Anmelden
 
@@ -69,7 +69,7 @@ Am Ende der Phase `apps` öffnet der Installer die Assistenten-App auf dem Spot 
 
 Claude meldet dich mit einem Link an, den du per E-Mail bekommst. Dieser Link muss **auf dem Spot** geöffnet werden, also auf dem Gerät, auf dem du dich anmeldest. Einen langen Link auf dem kleinen runden Display einzutippen ist unpraktisch. Deshalb reicht der Installer ihn für dich weiter.
 
-1. Wähle auf dem Spot **„Mit E-Mail fortfahren“** und tippe deine E-Mail-Adresse ein.
+1. Wähle auf dem Spot **„Mit E-Mail fortfahren“** und tippe deine E-Mail-Adresse ein. (Mit `scrcpy` tippt es sich leichter, siehe den Tipp unten.)
 2. Öffne am Computer die E-Mail von Anthropic. Klick mit der rechten Maustaste auf den Anmelde-Button und kopiere den Link.
 3. Der Installer fragt `Login-Link jetzt einfügen? [J/n]`. Drück Enter. Willst du das später erledigen, starte:
 
@@ -429,7 +429,7 @@ Der Grund in Klammern zeigt, was das Gespräch beendet hat: `wake word` (das Wak
 
 ## Nützliche adb-Befehle
 
-Für Tests und Feinabstimmung von deinem Computer aus. Listet `adb devices` mehr als ein Gerät, schreib `-s 192.168.x.y:5555` direkt hinter `adb`. Broadcasts erreichen Spot Voice nur, solange sein Zuhör-Dienst läuft. Ausnahmen sind `SET_ASSISTANT` und `SET_LANG`, die auch bei gestopptem Dienst gespeichert werden, und `DUMP_NODES`, das die Bedienungshilfe verarbeitet.
+Für Tests und Feinabstimmung von deinem Computer aus. Prüf zuerst, ob `adb` den Spot sieht: `adb devices`. Ist die Liste leer (zum Beispiel nach einem Neustart deines Computers), verbinde dich mit `adb connect 192.168.x.y:5555`, mit der Adresse, die `./install.sh status` unter „Gerät“ zeigt. Listet `adb devices` mehr als ein Gerät, schreib `-s 192.168.x.y:5555` direkt hinter `adb`. Broadcasts erreichen Spot Voice nur, solange sein Zuhör-Dienst läuft. Ausnahmen sind `SET_ASSISTANT` und `SET_LANG`, die auch bei gestopptem Dienst gespeichert werden, und `DUMP_NODES`, das die Bedienungshilfe verarbeitet.
 
 | Was | Befehl | Wirkung |
 |---|---|---|
@@ -474,6 +474,7 @@ Scheitert das automatische Antippen, steht im Log außerdem `A11y: try 1/8: no n
 | Problem | Siehe |
 |---|---|
 | Die Installation in Aurora wird nie fertig | [Aurora-Installation hängt](09-troubleshooting.md#aurora-store-hangs-while-installing) |
+| `Konnte das App-Release nicht von GitHub laden` | [Das App-Release lässt sich nicht laden](09-troubleshooting.md#the-app-release-cannot-be-downloaded) |
 | Der Login-Link tut auf dem Spot nichts | [Probleme bei der Anmeldung](09-troubleshooting.md#the-login-link-does-not-open) |
 | `adb` erreicht den Spot nach einem Neustart nicht | [adb über WLAN nach Neustart weg](09-troubleshooting.md#adb-over-wi-fi-is-gone-after-a-reboot) |
 | Auf das Wake-Word passiert nichts | [Wake-Word wird nicht erkannt](09-troubleshooting.md#the-wake-word-does-not-react) |

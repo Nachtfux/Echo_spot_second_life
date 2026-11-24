@@ -120,7 +120,7 @@ Befehle:
 Optionen:
   --assistant claude|chatgpt   welchen Assistenten das Wake-Word startet
   --lang de|en                 Sprache des Spot, der Sprachbefehle und dieses Skripts
-  --place "<Ort>"              Wetter-Ort für die Uhr (Stadt oder Postleitzahl)
+  --place "<Ort>"              Wetter-Ort für die Uhr (Ortsname, z. B. "Neustadt, Holstein")
   --device <Seriennr|IP:Port>  welches Gerät (Standard: USB, nach setup die WLAN-Adresse)
   --spotify | --no-spotify     Spotify mitinstallieren (sonst wird gefragt)
   --sensitivity high|normal|low  wie leicht das Wake-Word auslöst (Standard normal;
@@ -169,7 +169,7 @@ Commands:
 Options:
   --assistant claude|chatgpt   which assistant the wake word starts
   --lang de|en                 language of the Spot, the voice commands and this installer
-  --place "<city>"             weather place for the clock (city or postal code)
+  --place "<city>"             weather place for the clock (town name, e.g. "Springfield, Illinois")
   --device <serial|ip:port>    which device to use (default: USB, after setup the Wi-Fi address)
   --spotify | --no-spotify     also install Spotify (asked if not given)
   --sensitivity high|normal|low  how easily the wake word triggers (default normal;
@@ -305,8 +305,8 @@ ask_missing_config() {
     changed=1
   fi
   if [ -z "$CFG_PLACE" ] && phases_need "$list" clock; then
-    ask_value "$(L "Weather place for the clock (city or postal code, empty = no weather)" \
-                   "Wetter-Ort für die Uhr (Stadt oder Postleitzahl, leer = kein Wetter)")" ""
+    ask_value "$(L "Weather place for the clock (town name, optionally \"<town>, <region>\"; empty = no weather)" \
+                   "Wetter-Ort für die Uhr (Ortsname, gern \"<Ort>, <Region>\"; leer = kein Wetter)")" ""
     if [ -n "$REPLY_VALUE" ]; then CFG_PLACE="$(clean_value "$REPLY_VALUE")"; else CFG_PLACE="-"; fi
     CFG_LAT=""; CFG_LON=""
     changed=1

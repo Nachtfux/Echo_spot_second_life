@@ -64,7 +64,13 @@ Der Download hängt an einem Beitrag im XDA-Forum und braucht ein kostenloses XD
 2. Melde dich bei XDA an (oder leg ein kostenloses Konto an). Anhänge lassen sich nur herunterladen, wenn du
    angemeldet bist.
 3. Lade im ersten Beitrag den Anhang **`amonet-rook-v2.0.0.zip`** herunter.
-4. Leg die ZIP-Datei **ohne sie zu entpacken** in den Ordner `downloads/` des Projekts:
+
+   Safari entpackt ZIP-Dateien von selbst („Sichere Dateien nach dem Laden öffnen“), dann findest du in `Downloads`
+   nur einen Ordner `amonet-rook-v2.0.0`. Der Installer braucht aber die ZIP-Datei. Schalte die Option unter
+   Safari → Einstellungen → Allgemein aus und lade die Datei noch einmal, oder nimm einen anderen Browser.
+
+4. Leg die ZIP-Datei **ohne sie zu entpacken** in den Ordner `downloads/` des Projekts. Im Terminal, im Ordner
+   `Echo_spot_second_life`:
 
    ```bash
    mkdir -p downloads

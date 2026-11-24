@@ -14,6 +14,10 @@ ruhige **runde Uhr**. Ein einziges Skript, `./install.sh`, führt dich durch all
 Bootloaders bis zur abschließenden Prüfung. Du brauchst einen freien Nachmittag, ein USB-Datenkabel und einen Mac
 oder Linux-Rechner.
 
+<p align="center">
+  <b><a href="#schnellstart">Schnellstart</a></b> · <a href="#was-du-brauchst">Was du brauchst</a> · <a href="#die-anleitung">Die Anleitung</a> · <a href="#stand-was-getestet-wurde">Was getestet wurde</a> · <a href="docs/de/09-troubleshooting.md">Fehlerbehebung</a>
+</p>
+
 ## Was du bekommst
 
 <table>
@@ -85,22 +89,29 @@ Details, Bilder vom versteckten Anschluss und die Vorbereitung des Computers: [1
 
 ## Schnellstart
 
+Öffne ein Terminal (auf dem Mac: Programme → Dienstprogramme → Terminal) und tippe diese Zeilen ein. Neu bei `git`,
+Homebrew oder `adb`? [Kapitel 1](docs/de/01-hardware.md#dein-computer) zeigt, wie du sie vorher installierst.
+
 ```bash
+cd ~
 git clone https://github.com/Nachtfux/Echo_spot_second_life.git
 cd Echo_spot_second_life
 ./install.sh
 ```
 
-Beim ersten Start stellt der Installer drei Fragen: die Sprache (Deutsch oder Englisch), den Assistenten (Claude
-oder ChatGPT) und einen Ort für das Wetter. Danach arbeitet er neun Phasen der Reihe nach ab. Vor jeder fragt er
-`Phase "unlock" jetzt ausführen? [J/n/skip]`. Mit Strg+C kannst du jederzeit abbrechen, nur nicht während des
+Beim ersten Start stellt der Installer drei Fragen: die Sprache (`de` oder `en`), den Assistenten (`claude` oder
+`chatgpt`) und einen Ort für das Wetter. Tippe einen Ortsnamen wie `Berlin` ein (nur Namen, keine Postleitzahl;
+`<Ort>, <Region>` grenzt ein) oder drücke Enter für kein Wetter. Danach arbeitet er neun Phasen der Reihe
+nach ab. Vor jeder fragt er `Phase "unlock" jetzt ausführen? [J/n/skip]`: Enter führt die Phase aus, `n` hört hier auf
+und du machst später weiter, `skip` überspringt sie. Mit Strg+C kannst du jederzeit abbrechen, nur nicht während des
 Entsperrens. Startest du `./install.sh` noch einmal, überspringt er erledigte Phasen und macht weiter. Drei Phasen
 brauchen deine Hände: **unlock** (Datei herunterladen, Tasten drücken), **setup** (auf dem Spot tippen) und
 **apps** (installieren und anmelden).
 
 > [!TIP]
 > Erst einmal nur zuschauen? `./install.sh --dry-run --yes` zeigt jeden Befehl an, statt ihn auszuführen.
-> Dafür brauchst du kein Gerät, und es wird nichts heruntergeladen.
+> Dafür brauchst du kein Gerät, es wird nichts heruntergeladen und nichts gespeichert. Der echte Lauf stellt
+> seine Fragen deshalb noch einmal.
 
 <p align="center">
   <img src="docs/images/install-flow.de.svg" alt="Die neun Phasen von ./install.sh: doctor; unlock, backup und flash einmalig mit dem USB-Kabel; setup und apps am Display des Spot; voice, clock und verify wiederholbar über WLAN" width="900">

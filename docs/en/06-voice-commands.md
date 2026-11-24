@@ -272,15 +272,17 @@ The voice commands are set up by the `voice` phase (chapter 5). For commands it:
 2. Checks its SHA-256 checksum, unpacks it and copies the folder to the Spot as `vosk-en` or `vosk-de` (about 50 MB). If the model is already there, it skips this step; `--force` copies it again.
 3. Sends `SET_LANG` so Spot Voice loads the model.
 
-Spotify is installed by the `apps` phase if you said yes (or with `--spotify`). The dry-run shows the Vosk steps:
+Spotify is installed by the `apps` phase if you said yes (or with `--spotify`). The dry-run shows the Vosk steps (`…` stands for the project folder, which the installer prints in full):
 
 ```text
 ==> Offline speech model for voice commands (Vosk, en)
 [..] Downloading vosk-model-small-en-us-0.15.zip ...
 + curl -fL --retry 3 -o downloads/vosk-model-small-en-us-0.15.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
 + shasum -a 256 downloads/vosk-model-small-en-us-0.15.zip
++ unzip -q -o …/downloads/vosk-model-small-en-us-0.15.zip -d …/downloads
 [..] Copying the model to the Spot (about 50 MB) ...
 + adb shell rm -rf /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-en
++ adb push …/downloads/vosk-model-small-en-us-0.15 /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-en
 [ok] downloads/vosk-model-small-en-us-0.15/ -> /sdcard/Android/data/ai.pocket.heyclaude/files/vosk-en/
 ```
 

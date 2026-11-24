@@ -195,6 +195,7 @@ Spot Clock speaks **English** or **German**. It follows the Spot's system langua
 | ALARM 06:30 | WECKER 06:30 |
 | Tap to stop | Tippen zum Beenden |
 | Back to clock | Zur Uhr |
+| Spot Clock (app name) | Spot-Uhr |
 
 Times are always in 24-hour format, in both languages. The screenshots in this guide show the German UI.
 
@@ -202,7 +203,7 @@ Times are always in 24-hour format, in both languages. The screenshots in this g
 
 ## Broadcasts the clock accepts
 
-For tests and automation from your computer. If `adb devices` lists more than one device, add `-s 192.168.x.y:5555` after `adb`.
+For tests and automation from your computer. If `adb devices` lists nothing, connect first with `adb connect 192.168.x.y:5555` (address from `./install.sh status`). If it lists more than one device, add `-s 192.168.x.y:5555` after `adb`.
 
 | Action | Command | Effect |
 |---|---|---|
@@ -268,6 +269,7 @@ The `clock` phase:
 | Symptom | See |
 |---|---|
 | The weather shows `—` / NO LOCATION | [No weather on the clock](09-troubleshooting.md#no-weather-on-the-clock) |
+| `Could not download the app release from GitHub` | [The app release cannot be downloaded](09-troubleshooting.md#the-app-release-cannot-be-downloaded) |
 | No cover or title while music plays | [The now-playing face does not appear](09-troubleshooting.md#the-now-playing-face-does-not-appear) |
 | Home shows another launcher, or the clock does not come back | [The clock is not the home screen](09-troubleshooting.md#the-clock-is-not-the-home-screen) |
 | The centre cap stays gray | [The wake word does not react](09-troubleshooting.md#the-wake-word-does-not-react) |

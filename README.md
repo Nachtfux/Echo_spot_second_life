@@ -13,6 +13,10 @@ timers and alarms. When nobody is talking, the Spot shows a calm **round clock**
 guides you through every step, from unlocking the bootloader to a final check. You need a free afternoon, a USB data
 cable and a Mac or Linux computer.
 
+<p align="center">
+  <b><a href="#quick-start">Quick start</a></b> · <a href="#what-you-need">What you need</a> · <a href="#the-guide">The guide</a> · <a href="#status-what-was-tested">What was tested</a> · <a href="docs/en/09-troubleshooting.md">Troubleshooting</a>
+</p>
+
 ## What you get
 
 <table>
@@ -81,21 +85,27 @@ Details, photos of the hidden port and computer preparation: [1 · Hardware and 
 
 ## Quick start
 
+Open a terminal (on a Mac: Applications → Utilities → Terminal) and type these lines. New to `git`, Homebrew or
+`adb`? [Chapter 1](docs/en/01-hardware.md#your-computer) shows how to install them first.
+
 ```bash
+cd ~
 git clone https://github.com/Nachtfux/Echo_spot_second_life.git
 cd Echo_spot_second_life
 ./install.sh
 ```
 
-On the first run the installer asks three questions: the language (German or English), the assistant (Claude or
-ChatGPT) and a place for the weather. Then it runs nine phases in order. Before each one it asks
-`Run phase "unlock" now? [Y/n/skip]`. You can stop with Ctrl+C at any time, except during the unlock. When you run
-`./install.sh` again, it skips finished phases and continues. Three phases need your hands: **unlock** (download a
-file, press buttons), **setup** (taps on the Spot) and **apps** (install and log in).
+On the first run the installer asks three questions: the language (`de` or `en`), the assistant (`claude` or
+`chatgpt`) and a place for the weather. Type a town name such as `Berlin` (names only, no postal codes;
+`<town>, <region>` narrows it down), or press Enter for no weather. Then it runs nine phases in order. Before
+each one it asks `Run phase "unlock" now? [Y/n/skip]`: Enter runs the phase, `n` stops here so you can continue later,
+`skip` skips it. You can stop with Ctrl+C at any time, except during the unlock. When you run `./install.sh` again, it
+skips finished phases and continues. Three phases need your hands: **unlock** (download a file, press buttons),
+**setup** (taps on the Spot) and **apps** (install and log in).
 
 > [!TIP]
 > Want to see everything first? `./install.sh --dry-run --yes` prints every command instead of running it.
-> It needs no device and downloads nothing.
+> It needs no device, downloads nothing and saves nothing, so the real run asks its questions again.
 
 <p align="center">
   <img src="docs/images/install-flow.en.svg" alt="The nine phases of ./install.sh: doctor; unlock, backup and flash once with the USB cable; setup and apps on the Spot's screen; voice, clock and verify repeatable over Wi-Fi" width="900">

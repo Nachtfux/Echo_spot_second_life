@@ -15,7 +15,7 @@ how to restore a backup and how to uninstall.
 | [Unlock](#unlock) | [fastboot does not see the Spot](#fastboot-does-not-see-the-spot) · [The safety checks stop the unlock](#the-safety-checks-stop-the-unlock) · [Exploit timeout](#exploit-timeout) · [TWRP does not appear](#twrp-does-not-appear) |
 | [Backup and LineageOS](#backup-and-lineageos) | [sha256 mismatch](#sha256-mismatch) · [TWRP is not found](#twrp-is-not-found) · [First boot loops](#first-boot-loops) |
 | [Android setup](#android-setup) | [adb unauthorized](#adb-unauthorized) · [Rooted debugging is off](#rooted-debugging-is-off) · [adb over Wi-Fi lost after reboot](#adb-over-wi-fi-lost-after-reboot) · [More than one device](#more-than-one-device) |
-| [Apps and login](#apps-and-login) | [Aurora install hangs](#aurora-install-hangs) · [Login problems](#login-problems) |
+| [Apps and login](#apps-and-login) | [Aurora install hangs](#aurora-install-hangs) · [Login problems](#login-problems) · [The app release cannot be downloaded](#the-app-release-cannot-be-downloaded) |
 | [Voice assistant](#voice-assistant) | [Accessibility service turned off by Android](#accessibility-service-turned-off-by-android) · [Voice button not found](#voice-button-not-found) · [The Spot wakes up by itself](#the-spot-wakes-up-by-itself) · [Wake word not recognised](#wake-word-not-recognised) · [The Spot beeps but nothing opens](#the-spot-beeps-but-nothing-opens) · [Assistant interrupts itself](#assistant-interrupts-itself) · [Conversation does not end](#conversation-does-not-end) · [Spot Voice stopped listening](#spot-voice-stopped-listening) |
 | [Voice commands](#voice-commands) | [Voice commands misunderstood](#voice-commands-misunderstood) · [Radio station not found](#radio-station-not-found) · [Spotify does not play](#spotify-does-not-play) |
 | [Clock](#clock) | [Weather missing](#weather-missing) · [Clock not shown after wake](#clock-not-shown-after-wake) · [Now playing is not shown](#now-playing-is-not-shown) |
@@ -57,7 +57,9 @@ Spot Voice logs with the tag `HeyClaude`, its wake-word detector with `OpenWakeW
    adb logcat -d -s HeyClaude OpenWakeWord SpotClock > spot-log.txt
    ```
 
-Over Wi-Fi add `-s 192.168.x.y:5555` after `adb`.
+These commands talk to the Spot through `adb`. If `adb devices` lists nothing, connect first with
+`adb connect 192.168.x.y:5555` (the address is shown by `./install.sh status` under "Device"). If it lists the Spot
+twice (over USB and over Wi-Fi), add `-s 192.168.x.y:5555` after `adb`, see [More than one device](#more-than-one-device).
 
 Useful lines:
 
@@ -342,6 +344,15 @@ adb connect 192.168.x.y:5555
 Message: `More than one Android device is connected.` Unplug the others, or choose the Spot with
 `--device <serial>` (USB) or `--device 192.168.x.y:5555` (Wi-Fi). `adb devices -l` lists what is connected.
 
+This also happens with **one** Spot: after the setup phase it can be connected twice, over USB and over Wi-Fi.
+`adb devices` then shows two lines, a serial number with `device` and `192.168.x.y:5555` with `device`. Your own
+`adb shell …` commands then stop with `adb: more than one device/emulator`, and phases that start on USB (such as
+`setup`) wait with the message above. Any of these fixes it:
+
+1. Unplug the USB cable (the power supply stays in). Everything after setup works over Wi-Fi.
+2. Or drop the Wi-Fi connection for now: `adb disconnect 192.168.x.y:5555`.
+3. Or name the device in your own commands: `adb -s 192.168.x.y:5555 shell …`.
+
 ## Apps and login
 
 <a id="aurora-store-hangs-while-installing"></a>
@@ -358,11 +369,34 @@ app, then offers a fallback: it takes the files Aurora has already downloaded an
 | Message | What to do |
 |---|---|
 | `Aurora has not downloaded <pkg> yet.` | Tap "Install" in Aurora, wait until the download has finished, then run `./install.sh apps` again. |
-| `The fallback needs apksigner (Android SDK build-tools)` | Install the build-tools: Android Studio's SDK Manager, or `brew install --cask android-commandlinetools` and then `sdkmanager "build-tools;36.0.0"`. If the SDK is not in the default place, set `ANDROID_HOME`. |
+| `The fallback needs apksigner (Android SDK build-tools)` | Install `apksigner` as described below, then run `./install.sh apps` again. |
 | `No armeabi-v7a split found` | The app version may not run on the Spot (32-bit ARM). Try again later, a newer version may have it. |
 | `The split APKs do not all have the same valid signer - not installing them.` | The files cannot be trusted, so nothing was installed. Try again later; if it happens again, ask for help. |
 
 First time in Aurora: go through its welcome screens and choose the **anonymous** login. No Google account is needed.
+
+**Getting `apksigner`.** The installer looks for `apksigner` on your path, or in the newest `build-tools/<version>/`
+folder of an Android SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT`, `~/Library/Android/sdk` (macOS) or `~/Android/Sdk`
+(Linux). That SDK folder must also contain a `platforms/` folder. `apksigner` is a Java program, so you also need
+JDK 17 or newer. Two ways on a Mac (neither was tried on a clean Mac for this guide):
+
+1. **With Android Studio** (easiest): install [Android Studio](https://developer.android.com/studio), start it once
+   and let its setup wizard download the SDK. It goes to `~/Library/Android/sdk` and includes build-tools and a
+   platform. Then install Java: `brew install openjdk@17`.
+2. **Without Android Studio**, in one terminal window:
+
+   ```bash
+   brew install openjdk@17
+   brew install --cask android-commandlinetools
+   export JAVA_HOME="$(brew --prefix openjdk@17)"
+   export ANDROID_HOME="$(brew --prefix)/share/android-commandlinetools"
+   sdkmanager "build-tools;36.0.0" "platforms;android-30"
+   ./install.sh apps
+   ```
+
+   `ANDROID_HOME` only lasts for this terminal window. In a new window, set it again before you run the installer.
+
+`./install.sh doctor` shows `[ok] apksigner: …` when it is found.
 
 <a id="the-login-link-does-not-open"></a>
 
@@ -396,6 +430,28 @@ scrcpy                          # over Wi-Fi: scrcpy -s 192.168.x.y:5555
 ```
 
 **Microphone:** if the assistant app asks for the microphone, allow it. The apps phase can also grant it for you.
+
+### The app release cannot be downloaded
+
+The `voice` and `clock` phases download `spot-voice.apk`, `spot-clock.apk` and `SHA256SUMS` from the latest
+[GitHub release](https://github.com/Nachtfux/Echo_spot_second_life/releases) of this project. If that fails, the
+installer stops with:
+
+```
+[xx] Could not download the app release from GitHub: https://github.com/Nachtfux/Echo_spot_second_life/releases/latest/download
+     No internet, or no release published yet. You can build the apps yourself: add --from-source
+```
+
+1. Check your computer's internet connection and run the same phase again.
+2. Open the releases page in your browser. If it lists no release yet, build the apps yourself. This needs JDK 17
+   and the Android SDK; `./install.sh build` tells you what is missing and how to get it:
+
+   ```bash
+   ./install.sh voice clock --from-source
+   ```
+
+3. If you have built the apps before (`dist/spot-voice.apk`), the installer offers to use them:
+   `Use the locally built dist/spot-voice.apk instead? [Y/n]`.
 
 ## Voice assistant
 
